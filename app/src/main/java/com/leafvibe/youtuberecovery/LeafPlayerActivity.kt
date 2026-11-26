@@ -17,10 +17,14 @@ import android.app.AlertDialog
 class LeafPlayerActivity : Activity() {
     private val navy = Color.rgb(15, 27, 43)
     private val green = Color.rgb(34, 197, 94)
-    private val tools = linkedSetOf("LeafTranslate", "LeafTranscript", "LeafSummary", "LeafChapters", "LeafLinks", "LeafVocabulary", "LeafNotes", "LeafSimilar")
+    private lateinit var tools: MutableSet<String>
+    private val defaultTools = setOf("LeafTranslate", "LeafTranscript", "LeafSummary", "LeafChapters", "LeafLinks", "LeafVocabulary", "LeafNotes", "LeafSimilar")
+    private fun saveTools() { getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE).edit().putStringSet("active_video_tools", tools.toSet()).apply() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val prefs = getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE)
+        tools = (prefs.getStringSet("active_video_tools", null) ?: defaultTools).toMutableSet()
         val url = intent.getStringExtra("video_url").orEmpty()
         val videoId = extractVideoId(url)
         val root = LinearLayout(this).apply {
@@ -95,7 +99,7 @@ class LeafPlayerActivity : Activity() {
                 } else {
                     AlertDialog.Builder(this@LeafPlayerActivity)
                         .setTitle("Ajouter un outil")
-                        .setItems(available.toTypedArray()) { _, which -> tools.add(available[which]); refreshTools() }
+                        .setItems(available.toTypedArray()) { _, which -> tools.add(available[which]); saveTools(); refreshTools() }
                         .show()
                 }
             }
@@ -106,7 +110,7 @@ class LeafPlayerActivity : Activity() {
                 val current = tools.toList()
                 if (current.isNotEmpty()) AlertDialog.Builder(this@LeafPlayerActivity)
                     .setTitle("Supprimer un outil")
-                    .setItems(current.toTypedArray()) { _, which -> tools.remove(current[which]); refreshTools() }
+                    .setItems(current.toTypedArray()) { _, which -> tools.remove(current[which]); saveTools(); refreshTools() }
                     .show()
             }
         }
