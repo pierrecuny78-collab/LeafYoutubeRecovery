@@ -1,54 +1,72 @@
 package com.leafvibe.youtuberecovery
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.graphics.Color
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Button
-import android.view.ViewGroup
-import android.graphics.Color
-import android.view.Gravity
+import android.widget.HorizontalScrollView
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import android.widget.Toast
-import android.app.AlertDialog
 
 class LeafPlayerActivity : Activity() {
     private val navy = Color.rgb(15, 27, 43)
+    private val panel = Color.rgb(23, 40, 59)
     private val green = Color.rgb(34, 197, 94)
     private lateinit var tools: MutableSet<String>
-    private val defaultTools = setOf("LeafTranslate", "LeafTranscript", "LeafSummary", "LeafChapters", "LeafLinks", "LeafVocabulary", "LeafNotes", "LeafSimilar")
-    private fun saveTools() { getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE).edit().putStringSet("active_video_tools", tools.toSet()).apply() }
+    private lateinit var toolRow: LinearLayout
+    private val toolDescriptions = linkedMapOf(
+        "LeafTranscript" to "Consulter une transcription lorsque YouTube la rend disponible. L'import et l'affichage avancé seront ajoutés dans une prochaine version.",
+        "LeafTranslate" to "Traduire une transcription ou une description. Le moteur de traduction sera connecté dans une prochaine version.",
+        "LeafSummary" to "Préparer un résumé à partir d'une transcription accessible. Le résumé automatique sera ajouté ensuite.",
+        "LeafChapters" to "Conserver des repères temporels et retrouver les passages importants.",
+        "LeafLinks" to "Noter et organiser les liens utiles associés à cette vidéo.",
+        "LeafVocabulary" to "Enregistrer des mots et expressions à retenir.",
+        "LeafNotes" to "Écrire des notes personnelles liées à cette vidéo.",
+        "LeafSimilar" to "Regrouper des vidéos et chaînes similaires."
+    )
+    private fun saveTools() {
+        getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE).edit()
+            .putStringSet("active_video_tools", tools.toSet()).apply()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE)
-        tools = (prefs.getStringSet("active_video_tools", null) ?: defaultTools).toMutableSet()
+        tools = (prefs.getStringSet("active_video_tools", null) ?: setOf("LeafTranscript", "LeafTranslate", "LeafSummary", "LeafNotes")).toMutableSet()
         val url = intent.getStringExtra("video_url").orEmpty()
-        val videoId = extractVideoId(url)
+        val id = extractVideoId(url)
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(navy)
-            setPadding(18, 18, 18, 12)
         }
-        val back = Button(this).apply {
-            text = "← Retour à LeafYoutubeRecovery"
-            setOnClickListener { finish() }
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(12, 8, 12, 8)
+            setBackgroundColor(navy)
         }
-        root.addView(back, LinearLayout.LayoutParams(-1, -2))
-        root.addView(TextView(this).apply {
-            text = "LEAFPLAYER"
-            textSize = 22f
+        header.addView(Button(this).apply { text = "← Retour"; setOnClickListener { finish() } })
+        header.addView(TextView(this).apply {
+            text = "   LEAFPLAYER"
+            textSize = 21f
             setTextColor(green)
-            setPadding(0, 14, 0, 8)
+            setPadding(8, 12, 0, 0)
         })
-        root.addView(TextView(this).apply {
-            text = "Lecteur YouTube intégré"
-            textSize = 16f
-            setTextColor(Color.WHITE)
-        })
-        val web = WebView(this).apply {
+        root.addView(header)
+
+        val scroll = ScrollView(this)
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(14, 4, 14, 20)
+        }
+        val player = WebView(this).apply {
             setBackgroundColor(Color.BLACK)
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -56,68 +74,109 @@ class LeafPlayerActivity : Activity() {
             webChromeClient = WebChromeClient()
             webViewClient = WebViewClient()
         }
-        root.addView(web, LinearLayout.LayoutParams(-1, 0, 1f))
-        if (videoId != null) {
+        content.addView(player, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(230)))
+        if (id != null) {
             val html = """
-                <!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head>
-                <body style="margin:0;background:#000">
-                <iframe width="100%" height="100%" style="position:absolute;inset:0;border:0"
-                src="https://www.youtube.com/embed/$videoId?playsinline=1&rel=0"
+                <!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+                <body style="margin:0;background:#000"><iframe width="100%" height="100%"
+                style="position:absolute;inset:0;border:0"
+                src="https://www.youtube.com/embed/$id?playsinline=1&rel=0"
                 title="YouTube video player" frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                </body></html>
+                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></body></html>
             """.trimIndent()
-            web.loadDataWithBaseURL("https://www.youtube.com", html, "text/html", "UTF-8", null)
+            player.loadDataWithBaseURL("https://www.youtube.com", html, "text/html", "UTF-8", null)
         } else {
-            web.loadUrl("https://www.youtube.com")
+            content.addView(TextView(this).apply {
+                text = "Lien vidéo non reconnu. Ajoute une URL YouTube valide (youtube.com/watch?v=… ou youtu.be/…)."
+                setTextColor(Color.WHITE)
+            })
         }
 
-        val toolsTitle = TextView(this).apply {
-            text = "MES OUTILS VIDÉO"
-            textSize = 15f
+        content.addView(TextView(this).apply {
+            text = "MES APPLICATIONS VIDÉO"
+            textSize = 17f
             setTextColor(green)
-            setPadding(0, 14, 0, 4)
-        }
-        root.addView(toolsTitle)
-        val toolsText = TextView(this).apply {
-            setTextColor(Color.WHITE)
+            setPadding(0, 18, 0, 8)
+        })
+        content.addView(TextView(this).apply {
+            text = "Appuie sur un outil pour ouvrir sa fiche. Tu peux personnaliser cette barre."
+            textSize = 12f
+            setTextColor(Color.LTGRAY)
+        })
+        val toolScroll = HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false }
+        toolRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, 8, 0, 8) }
+        toolScroll.addView(toolRow)
+        content.addView(toolScroll)
+        val manageRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        manageRow.addView(Button(this).apply {
+            text = "+ Ajouter une application"
+            setOnClickListener { showAddToolDialog() }
+        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        manageRow.addView(Button(this).apply {
+            text = "− Retirer"
+            setOnClickListener { showRemoveToolDialog() }
+        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        content.addView(manageRow)
+        content.addView(TextView(this).apply {
+            text = "INFORMATIONS"
+            textSize = 16f
+            setTextColor(green)
+            setPadding(0, 20, 0, 6)
+        })
+        content.addView(TextView(this).apply {
+            text = "La lecture utilise le lecteur officiel YouTube. Les outils sont installables dans cette barre ; leurs fonctions avancées seront activées progressivement."
+            setTextColor(Color.LTGRAY)
             textSize = 13f
-            setPadding(0, 4, 0, 8)
-        }
-        fun refreshTools() { toolsText.text = if (tools.isEmpty()) "Aucun outil ajouté" else tools.joinToString("   •   ") }
-        root.addView(toolsText)
-        refreshTools()
-        val actions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER }
-        val manage = Button(this).apply {
-            text = "+ Ajouter un outil"
-            setOnClickListener {
-                val available = listOf("LeafTranslate", "LeafTranscript", "LeafSummary", "LeafChapters", "LeafLinks", "LeafVocabulary", "LeafNotes", "LeafSimilar")
-                    .filterNot { it in tools }
-                if (available.isEmpty()) {
-                    Toast.makeText(this@LeafPlayerActivity, "Tous les outils sont déjà ajoutés", Toast.LENGTH_SHORT).show()
-                } else {
-                    AlertDialog.Builder(this@LeafPlayerActivity)
-                        .setTitle("Ajouter un outil")
-                        .setItems(available.toTypedArray()) { _, which -> tools.add(available[which]); saveTools(); refreshTools() }
-                        .show()
-                }
-            }
-        }
-        val remove = Button(this).apply {
-            text = "− Supprimer"
-            setOnClickListener {
-                val current = tools.toList()
-                if (current.isNotEmpty()) AlertDialog.Builder(this@LeafPlayerActivity)
-                    .setTitle("Supprimer un outil")
-                    .setItems(current.toTypedArray()) { _, which -> tools.remove(current[which]); saveTools(); refreshTools() }
-                    .show()
-            }
-        }
-        actions.addView(manage, LinearLayout.LayoutParams(0, -2, 1f))
-        actions.addView(remove, LinearLayout.LayoutParams(0, -2, 1f))
-        root.addView(actions)
+        })
+        scroll.addView(content)
+        root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         setContentView(root)
+        refreshTools()
+    }
+
+    private fun refreshTools() {
+        toolRow.removeAllViews()
+        if (tools.isEmpty()) {
+            toolRow.addView(TextView(this).apply { text = "Aucun outil ajouté"; setTextColor(Color.WHITE); setPadding(8, 12, 8, 12) })
+        }
+        tools.forEach { name ->
+            toolRow.addView(Button(this).apply {
+                text = name.removePrefix("Leaf")
+                setTextColor(navy)
+                setBackgroundColor(green)
+                setOnClickListener { showTool(name) }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(46)).apply { setMargins(4, 0, 4, 0) })
+        }
+    }
+
+    private fun showTool(name: String) {
+        AlertDialog.Builder(this)
+            .setTitle(name)
+            .setMessage(toolDescriptions[name] ?: "Outil Leaf")
+            .setPositiveButton("Compris", null)
+            .show()
+    }
+
+    private fun showAddToolDialog() {
+        val available = toolDescriptions.keys.filterNot { it in tools }
+        if (available.isEmpty()) {
+            Toast.makeText(this, "Tous les outils sont déjà ajoutés", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this).setTitle("Ajouter une application")
+            .setItems(available.toTypedArray()) { _, which ->
+                tools.add(available[which]); saveTools(); refreshTools()
+            }.show()
+    }
+
+    private fun showRemoveToolDialog() {
+        val current = tools.toList()
+        if (current.isEmpty()) return
+        AlertDialog.Builder(this).setTitle("Retirer une application")
+            .setItems(current.toTypedArray()) { _, which ->
+                tools.remove(current[which]); saveTools(); refreshTools()
+            }.show()
     }
 
     private fun extractVideoId(raw: String): String? {
@@ -128,7 +187,5 @@ class LeafPlayerActivity : Activity() {
         return patterns.firstNotNullOfOrNull { it.find(raw)?.groupValues?.getOrNull(1) }
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }
