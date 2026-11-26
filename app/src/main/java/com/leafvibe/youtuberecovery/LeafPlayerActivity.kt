@@ -32,17 +32,22 @@ class LeafPlayerActivity : Activity() {
         "LeafLinks" to "Noter et organiser les liens utiles associés à cette vidéo.",
         "LeafVocabulary" to "Enregistrer des mots et expressions à retenir.",
         "LeafNotes" to "Écrire des notes personnelles liées à cette vidéo.",
-        "LeafSimilar" to "Regrouper des vidéos et chaînes similaires."
+        "LeafSimilar" to "Regrouper des vidéos et chaînes similaires.",
+        "LeafDiscover" to "Rechercher et découvrir des chaînes et vidéos YouTube.",
+        "LeafPlaylist" to "Organiser des collections de vidéos et playlists.",
+        "LeafGraph" to "Visualiser les relations entre chaînes et contenus.",
+        "LeafStats" to "Consulter les statistiques de ta bibliothèque.",
+        "LeafPlayer" to "Lire la vidéo avec le lecteur YouTube intégré."
     )
     private fun saveTools() {
         getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE).edit()
-            .putStringSet("active_video_tools", tools.toSet()).apply()
+            .putStringSet("active_video_tools", tools.toSet()).putStringSet("home_tools", tools.toSet()).apply()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE)
-        tools = (prefs.getStringSet("active_video_tools", null) ?: setOf("LeafTranscript", "LeafTranslate", "LeafSummary", "LeafNotes")).toMutableSet()
+        tools = (prefs.getStringSet("active_video_tools", null) ?: prefs.getStringSet("home_tools", null) ?: setOf("LeafPlayer", "LeafTranscript", "LeafTranslate", "LeafSummary", "LeafNotes")).toMutableSet()
         val url = intent.getStringExtra("video_url").orEmpty()
         val id = extractVideoId(url)
         currentVideoId = id ?: url
