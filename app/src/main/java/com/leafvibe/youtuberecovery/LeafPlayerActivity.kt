@@ -14,6 +14,8 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.EditText
+import android.widget.LinearLayout.LayoutParams
 
 class LeafPlayerActivity : Activity() {
     private val navy = Color.rgb(15, 27, 43)
@@ -21,6 +23,7 @@ class LeafPlayerActivity : Activity() {
     private val green = Color.rgb(34, 197, 94)
     private lateinit var tools: MutableSet<String>
     private lateinit var toolRow: LinearLayout
+    private var currentVideoId: String = ""
     private val toolDescriptions = linkedMapOf(
         "LeafTranscript" to "Consulter une transcription lorsque YouTube la rend disponible. L'import et l'affichage avancé seront ajoutés dans une prochaine version.",
         "LeafTranslate" to "Traduire une transcription ou une description. Le moteur de traduction sera connecté dans une prochaine version.",
@@ -42,6 +45,7 @@ class LeafPlayerActivity : Activity() {
         tools = (prefs.getStringSet("active_video_tools", null) ?: setOf("LeafTranscript", "LeafTranslate", "LeafSummary", "LeafNotes")).toMutableSet()
         val url = intent.getStringExtra("video_url").orEmpty()
         val id = extractVideoId(url)
+        currentVideoId = id ?: url
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -151,11 +155,25 @@ class LeafPlayerActivity : Activity() {
     }
 
     private fun showTool(name: String) {
-        AlertDialog.Builder(this)
-            .setTitle(name)
+        if (name == "LeafNotes") { showSavedTextTool("notes", "Notes de cette vidéo"); return }
+        if (name == "LeafChapters") { showSavedTextTool("chapters", "Chapitres et horodatages"); return }
+        if (name == "LeafLinks") { showSavedTextTool("links", "Liens associés à cette vidéo"); return }
+        AlertDialog.Builder(this).setTitle(name)
             .setMessage(toolDescriptions[name] ?: "Outil Leaf")
-            .setPositiveButton("Compris", null)
-            .show()
+            .setPositiveButton("Compris", null).show()
+    }
+
+    private fun showSavedTextTool(kind: String, title: String) {
+        val prefs = getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE)
+        val key = "${kind}_${currentVideoId}"
+        val input = EditText(this).apply {
+            minLines = 5
+            setText(prefs.getString(key, ""))
+            hint = when(kind) { "chapters" -> "00:00 Introduction\\n02:35 Sujet suivant"; "links" -> "https://…"; else -> "Mes notes sur cette vidéo…" }
+        }
+        AlertDialog.Builder(this).setTitle(title).setView(input)
+            .setPositiveButton("Enregistrer") { _, _ -> prefs.edit().putString(key, input.text.toString()).apply() }
+            .setNegativeButton("Annuler", null).show()
     }
 
     private fun showAddToolDialog() {
