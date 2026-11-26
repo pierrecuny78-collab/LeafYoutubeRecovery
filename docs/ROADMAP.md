@@ -1,28 +1,42 @@
 # LeafYoutubeRecovery roadmap
 
-## 0.1.0 — Base initiale
+## 0.1.0 — Bibliothèque de chaînes
 - [x] Catégories : ajouter, renommer et supprimer
-- [x] Les chaînes restent conservées si une catégorie est supprimée : elles passent dans « Non classées »
-- [x] Ajouter une chaîne YouTube existante et la classer
-- [x] Déplacer une chaîne depuis sa fiche
+- [x] Préserver les chaînes en les déplaçant vers « Non classées »
+- [x] Ajouter une chaîne existante et la classer
 - [x] Notes, liens vidéo et playlists par chaîne
 - [x] Icône Android LeafColour
 
-## 0.2.0 — Organisation
-- [ ] Sous-catégories, favoris, collections et groupes
-- [ ] Import/export JSON et sauvegarde ZIP
-- [ ] Recherche globale, historique des URL et identifiants
-- [ ] Icônes personnalisées pour les catégories
+## 0.2.0 — LeafPlayer et gestionnaire de modules
+- [x] Lecteur YouTube intégré via le lecteur officiel embarqué
+- [x] Lancement d'une vidéo enregistrée depuis la fiche de chaîne
+- [x] Barre d'outils en bas du lecteur
+- [x] Ajouter/supprimer les modules et mémoriser la sélection
+- [ ] Afficher toutes les vidéos d'une chaîne sous forme de liste de lecture
+- [ ] Ouvrir les fiches des modules et gérer leurs paramètres
 
-## 0.3.0 — Intégration YouTube
+## 0.3.0 — Analyse et enrichissement vidéo
+- [ ] LeafTranscript : récupérer/afficher les transcriptions disponibles et gérer les langues
+- [ ] LeafTranslate : traduire les sous-titres et métadonnées
+- [ ] LeafSummary : résumés et points clés à partir d'une transcription accessible
+- [ ] LeafChapters : chapitres et repères temporels
+- [ ] LeafLinks : classer les liens de description
+- [ ] LeafVocabulary : enregistrer vocabulaire et expressions
+- [ ] LeafNotes : notes horodatées reliées à LeafNotes
+
+## 0.4.0 — Découverte
 - [ ] YouTube Data API v3 configurable
 - [ ] Import des métadonnées, vidéos et playlists publiques
-- [ ] Suggestions de chaînes similaires et cache hors ligne
+- [ ] Chaînes et vidéos similaires
+- [ ] LeafGraph : relations entre chaînes et créateurs
 
-## 0.4.0 — LeafCreators et LeafGraph
-- [ ] Groupes de créateurs, relations et collaborations
-- [ ] Graphe visuel, comparaison et timeline
+## 0.5.0 — Fiabilité et personnalisation
+- [ ] Import/export JSON et sauvegarde ZIP
+- [ ] Room, migrations, sauvegardes et restauration
+- [ ] Favoris, collections, historique et recherche globale
+- [ ] Paramètres des modules et stockage local configurable
 
-## 0.5.0 — Fiabilité
-- [ ] Room, migrations, sauvegardes planifiées et restauration
-- [ ] Vérification des liens et stockage externe configurable
+## Contraintes
+- Pas de téléchargement ni de mise à disposition hors ligne des vidéos YouTube.
+- Conserver le lecteur officiel, ses commandes et ses mentions.
+- Les modules d'analyse ne doivent pas masquer ni modifier les commandes du lecteur.
