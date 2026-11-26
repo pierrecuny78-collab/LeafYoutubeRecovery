@@ -1,20 +1,21 @@
 # LeafYoutubeRecovery
 
-Application Android native de gestion personnelle de chaînes YouTube.
+Application Android native de gestion personnelle de chaînes YouTube, avec lecteur intégré LeafPlayer.
 
-## Version 0.1.0 — base initiale
-- Catégories personnalisables : ajouter, renommer et supprimer.
-- La suppression d'une catégorie déplace ses chaînes vers « Non classées » : aucune chaîne n'est supprimée.
-- Ajout manuel de chaînes YouTube existantes et classement par catégorie.
-- Déplacement d'une chaîne depuis sa fiche.
-- Fiche individuelle : liens vidéo, playlists et notes personnelles LeafNotes.
-- Recherche dans la bibliothèque et ouverture de la recherche YouTube.
-- Données conservées localement sur l'appareil.
+## Version 0.2.0 — LeafPlayer et outils modulaires
+- Lecteur vidéo YouTube intégré via le lecteur officiel embarqué (WebView / iframe).
+- Depuis la fiche d'une chaîne, lancement de la première URL vidéo enregistrée dans LeafPlayer.
+- Barre « Mes outils vidéo » en bas du lecteur.
+- Ajout et suppression des modules disponibles, avec sélection conservée localement : LeafTranslate, LeafTranscript, LeafSummary, LeafChapters, LeafLinks, LeafVocabulary, LeafNotes et LeafSimilar.
 - Identité visuelle LeafColour : bleu nuit #0F1B2B et vert #22C55E.
-- Icône vectorielle Android incluse.
 
-## Limites de cette première version
-La recherche YouTube s'ouvre dans le navigateur. L'import automatique des métadonnées, des vidéos et playlists publiques, ainsi que les suggestions de chaînes similaires, nécessitent l'intégration de YouTube Data API v3. L'application ne télécharge aucune vidéo et ne peut pas restaurer une chaîne supprimée de YouTube.
+**Important :** cette étape met en place le lecteur et le gestionnaire de modules. Les fonctions de traduction, transcription, résumé et recommandations ne sont pas encore implémentées ; elles nécessiteront leurs propres services/intégrations. Le lecteur utilise le lecteur YouTube officiel et ne télécharge pas les vidéos.
+
+## Fonctionnalités de bibliothèque
+- Catégories personnalisables : ajouter, renommer et supprimer.
+- La suppression d'une catégorie déplace ses chaînes vers « Non classées ».
+- Ajout manuel de chaînes existantes, recherche locale et liens vidéo/playlists/notes.
+- Données conservées localement sur l'appareil.
 
 ## Compilation
 JDK 17 et Android SDK 35 requis.
