@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -68,8 +69,9 @@ class MainActivity:ComponentActivity(){
 }
 
 @Composable private fun Detail(c:Channel,cats:List<String>,back:()->Unit,save:(Channel)->Unit,delete:()->Unit,openLink:(String)->Unit){
+ val context=LocalContext.current
  var category by remember(c.id){mutableStateOf(c.category)};var notes by remember(c.id){mutableStateOf(c.notes)};var videos by remember(c.id){mutableStateOf(c.videos)};var playlists by remember(c.id){mutableStateOf(c.playlists)}
  Column(Modifier.fillMaxSize().background(Navy).padding(16.dp)){TextButton(onClick=back){Text("← Retour")};Text(c.name,style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold);Text(c.url,color=Color.LightGray);Button(onClick={openLink(c.url)}){Text("Ouvrir sur YouTube")}
- LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)){item{Text("Catégorie",color=Green);cats.forEach{RadioButton(category==it,{category=it});Text(it)}};item{Text("Vidéos — un lien par ligne",color=Green);OutlinedTextField(videos,{videos=it},Modifier.fillMaxWidth(),minLines=3)};item{Text("Playlists",color=Green);OutlinedTextField(playlists,{playlists=it},Modifier.fillMaxWidth(),minLines=2)};item{Text("LeafNotes de cette chaîne",color=Green);OutlinedTextField(notes,{notes=it},Modifier.fillMaxWidth(),minLines=5)};item{Button(onClick={save(c.copy(category=category,notes=notes,videos=videos,playlists=playlists))},Modifier.fillMaxWidth()){Text("Enregistrer")};OutlinedButton(onClick=delete,Modifier.fillMaxWidth()){Text("Supprimer cette fiche")}}}
+ LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)){item{Text("Catégorie",color=Green);cats.forEach{RadioButton(category==it,{category=it});Text(it)}};item{Text("Vidéos — un lien par ligne",color=Green);OutlinedTextField(videos,{videos=it},Modifier.fillMaxWidth(),minLines=3);val firstVideo=videos.lines().firstOrNull{it.isNotBlank()};Button(onClick={if(firstVideo!=null)context.startActivity(Intent(context,LeafPlayerActivity::class.java).putExtra("video_url",firstVideo.trim()))},enabled=firstVideo!=null,modifier=Modifier.fillMaxWidth()){Text("Lire la première vidéo avec LeafPlayer")}};item{Text("Playlists",color=Green);OutlinedTextField(playlists,{playlists=it},Modifier.fillMaxWidth(),minLines=2)};item{Text("LeafNotes de cette chaîne",color=Green);OutlinedTextField(notes,{notes=it},Modifier.fillMaxWidth(),minLines=5)};item{Button(onClick={save(c.copy(category=category,notes=notes,videos=videos,playlists=playlists))},Modifier.fillMaxWidth()){Text("Enregistrer")};OutlinedButton(onClick=delete,Modifier.fillMaxWidth()){Text("Supprimer cette fiche")}}}
  }
 }
