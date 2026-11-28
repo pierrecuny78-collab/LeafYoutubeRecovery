@@ -52,6 +52,11 @@ class LeafPlayerActivity : Activity() {
         val url = intent.getStringExtra("video_url").orEmpty()
         val id = extractVideoId(url)
         currentVideoId = id ?: url
+        if (currentVideoId.isNotBlank()) {
+            val history = (prefs.getStringSet("video_history", emptySet()) ?: emptySet()).toMutableSet()
+            history.add(currentVideoId)
+            prefs.edit().putStringSet("video_history", history).apply()
+        }
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
