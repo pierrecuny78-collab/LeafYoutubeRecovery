@@ -317,6 +317,7 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
             LibraryVideo(channel.id,channel.name,channel.category,url,saved.optString(url,"À classer"))
         }
     }
+    val context = LocalContext.current
     val shown = allVideos.filter { video ->
         (folderFilter=="Toutes" || video.folder==folderFilter) &&
         (query.isBlank() || video.url.contains(query,true) || video.channelName.contains(query,true))
@@ -348,9 +349,11 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
                         }
                         Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                             TextButton(onClick={menuExpanded=true}) { Text("Classer") }
-                            Spacer(Modifier.weight(1f))
-                            Text(video.channelCategory,color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
+                            TextButton(onClick={playTool(context,video.url,"LeafNotes")}) { Text("Notes") }
+                            TextButton(onClick={playTool(context,video.url,"LeafChapters")}) { Text("Chapitres") }
+                            TextButton(onClick={playTool(context,video.url,"LeafLinks")}) { Text("Liens") }
                         }
+                        Text("Chaîne : ${video.channelCategory}",color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
                         DropdownMenu(expanded=menuExpanded,onDismissRequest={menuExpanded=false}) {
                             folders.forEach { folder -> DropdownMenuItem(text={Text(folder)},onClick={
                                 val target=channels.firstOrNull{it.id==video.channelId}
@@ -367,4 +370,10 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
             }
         }
     }
+}
+
+private fun playTool(context: android.content.Context, url: String, tool: String) {
+    context.startActivity(Intent(context, LeafPlayerActivity::class.java)
+        .putExtra("video_url", url)
+        .putExtra("open_tool", tool))
 }
