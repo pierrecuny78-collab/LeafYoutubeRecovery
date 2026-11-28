@@ -316,7 +316,11 @@ private data class LibraryVideo(val channelId:String,val channelName:String,val 
 private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Unit,back:()->Unit,play:(String)->Unit,openChannel:(String)->Unit) {
     var query by remember { mutableStateOf("") }
     var folderFilter by remember { mutableStateOf("Toutes") }
+    var quickFilter by remember { mutableStateOf("Toutes") }
     val context = LocalContext.current
+    val videoPrefs = context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE)
+    var favoriteVideoIds by remember { mutableStateOf(videoPrefs.getStringSet("video_favorites", emptySet())?.toSet() ?: emptySet()) }
+    var historyVideoIds by remember { mutableStateOf(videoPrefs.getStringSet("video_history", emptySet())?.toSet() ?: emptySet()) }
     var globalPlaylists by remember { mutableStateOf(runCatching { JSONObject(context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE).getString("global_video_playlists", "{}") ?: "{}") }.getOrDefault(JSONObject())) }
     var playlistDialogVideo by remember { mutableStateOf<LibraryVideo?>(null) }
     var createPlaylistDialog by remember { mutableStateOf(false) }
@@ -343,8 +347,10 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
         }
     }
     val shown = allVideos.filter { video ->
+        val id = extractYouTubeVideoId(video.url) ?: video.url
         (folderFilter=="Toutes" || video.folder==folderFilter) &&
         (playlistFilter=="Toutes" || video.url in playlistUrls(playlistFilter)) &&
+        (quickFilter=="Toutes" || (quickFilter=="Favoris" && id in favoriteVideoIds) || (quickFilter=="Historique" && id in historyVideoIds)) &&
         (query.isBlank() || video.url.contains(query,true) || video.channelName.contains(query,true))
     }
     Column(Modifier.fillMaxSize().background(Navy).padding(16.dp)) {
@@ -354,9 +360,18 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
         Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             Button(onClick={createPlaylistDialog=true}, modifier=Modifier.weight(1f)) { Text("+ Nouvelle playlist") }
             OutlinedButton(onClick={managePlaylistsDialog=true}, enabled=playlistNames.isNotEmpty()) { Text("Gérer") }
-            OutlinedButton(onClick={playlistFilter="Toutes";folderFilter="Toutes";query=""}) { Text("Réinitialiser") }
+            OutlinedButton(onClick={
+                favoriteVideoIds=videoPrefs.getStringSet("video_favorites",emptySet())?.toSet() ?: emptySet()
+                historyVideoIds=videoPrefs.getStringSet("video_history",emptySet())?.toSet() ?: emptySet()
+            }) { Text("Actualiser") }
+            OutlinedButton(onClick={playlistFilter="Toutes";folderFilter="Toutes";quickFilter="Toutes";query=""}) { Text("Réinitialiser") }
         }
         OutlinedTextField(value=query,onValueChange={query=it},modifier=Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Rechercher une vidéo ou une chaîne")},leadingIcon={Icon(Icons.Default.Search,null)})
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+            listOf("Toutes","Favoris","Historique").forEach { mode ->
+                FilterChip(selected=quickFilter==mode,onClick={quickFilter=mode},label={Text(when(mode){"Favoris"->"★ Favoris (${favoriteVideoIds.size})";"Historique"->"Récemment ouvertes (${historyVideoIds.size})";else->"Toutes les vidéos"})})
+            }
+        }
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
             FilterChip(selected=playlistFilter=="Toutes",onClick={playlistFilter="Toutes"},label={Text("Toutes les playlists")})
             playlistNames.forEach { name -> FilterChip(selected=playlistFilter==name,onClick={playlistFilter=name},label={Text("$name (${playlistUrls(name).size})")}) }
@@ -381,7 +396,19 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
                             }
                             Button(onClick={play(video.url)}) { Text("Lire") }
                         }
+                        val videoKey = extractYouTubeVideoId(video.url) ?: video.url
                         Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                            TextButton(onClick={
+                                val next = favoriteVideoIds.toMutableSet()
+                                if(videoKey in next) next.remove(videoKey) else next.add(videoKey)
+                                favoriteVideoIds=next
+                                videoPrefs.edit().putStringSet("video_favorites",next).apply()
+                            }) { Text(if(videoKey in favoriteVideoIds) "★ Favori" else "☆ Favori") }
+                            TextButton(onClick={
+                                val next = historyVideoIds + videoKey
+                                historyVideoIds=next
+                                videoPrefs.edit().putStringSet("video_history",next).apply()
+                            }) { Text(if(videoKey in historyVideoIds) "Déjà ouverte" else "Marquer ouverte") }
                             TextButton(onClick={menuExpanded=true}) { Text("Classer") }
                             TextButton(onClick={playTool(context,video.url,"LeafNotes")}) { Text("Notes") }
                             TextButton(onClick={playTool(context,video.url,"LeafChapters")}) { Text("Chapitres") }
