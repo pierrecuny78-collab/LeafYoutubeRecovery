@@ -1,4 +1,4 @@
-# LeafYoutubeRecovery 0.5.0
+# LeafYoutubeRecovery 0.9.0
 
 Application Android native de gestion de chaînes et de vidéos YouTube. Identité LeafColour : bleu nuit #0F1B2B et vert #22C55E.
 
@@ -66,3 +66,10 @@ Application ID : `com.leafvibe.youtuberecovery`
 ## Version 0.8.1 — Correction de compilation
 - Correction du parcours des clés JSON lors de la suppression d'une playlist.
 - Build Android relancé après correction.
+
+
+## Version 0.9.0 — Navigation et outils vidéo reliés
+- Depuis chaque vidéo d'une fiche de chaîne, ouvrir directement ses Notes, Chapitres ou Liens dans LeafPlayer.
+- Depuis la bibliothèque vidéo globale, revenir directement à la fiche de la chaîne d'origine.
+- Afficher les indicateurs Notes, Chapitres et Liens lorsqu'un contenu existe déjà pour la vidéo.
+- Utiliser le même extracteur d'identifiant YouTube dans les fiches et la bibliothèque, y compris pour les URL Shorts, live, embed et youtu.be.
