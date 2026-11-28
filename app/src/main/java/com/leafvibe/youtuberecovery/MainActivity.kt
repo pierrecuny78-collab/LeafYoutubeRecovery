@@ -249,7 +249,10 @@ private fun Detail(
                             TextButton(onClick = { playTool(context, videoUrl, "LeafChapters") }) { Text("Chapitres") }
                             TextButton(onClick = { playTool(context, videoUrl, "LeafLinks") }) { Text("Liens") }
                             TextButton(onClick = { playTool(context, videoUrl, "LeafTranscript") }) { Text("Transcription") }
+                            TextButton(onClick = { playTool(context, videoUrl, "LeafTranslate") }) { Text("Traduire") }
                             TextButton(onClick = { playTool(context, videoUrl, "LeafSummary") }) { Text("Résumé") }
+                            TextButton(onClick = { playTool(context, videoUrl, "LeafSubtitles") }) { Text("Sous-titres") }
+                            TextButton(onClick = { playTool(context, videoUrl, "LeafVocabulary") }) { Text("Vocabulaire") }
                         }
                     }
                 }
@@ -465,6 +468,9 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
                             val hasSummary=!videoPrefs.getString("summary_$toolVideoKey","").isNullOrBlank()
                             if(hasTranscript) Text("Transcription ✓",color=Green,style=MaterialTheme.typography.labelSmall)
                             if(hasSummary) Text("Résumé ✓",color=Green,style=MaterialTheme.typography.labelSmall)
+                            if(!videoPrefs.getString("translation_$toolVideoKey","").isNullOrBlank()) Text("Traduction ✓",color=Green,style=MaterialTheme.typography.labelSmall)
+                            if(!videoPrefs.getString("subtitles_$toolVideoKey","").isNullOrBlank()) Text("Sous-titres ✓",color=Green,style=MaterialTheme.typography.labelSmall)
+                            if(!videoPrefs.getString("vocabulary_$toolVideoKey","").isNullOrBlank()) Text("Vocabulaire ✓",color=Green,style=MaterialTheme.typography.labelSmall)
                         }
                         Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                             Text("Chaîne : ${video.channelCategory}",color=Color.LightGray,style=MaterialTheme.typography.labelSmall,modifier=Modifier.weight(1f))
