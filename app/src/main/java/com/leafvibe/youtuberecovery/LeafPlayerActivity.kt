@@ -27,12 +27,13 @@ class LeafPlayerActivity : Activity() {
     private lateinit var toolRow: LinearLayout
     private var currentVideoId: String = ""
     private val toolDescriptions = linkedMapOf(
-        "LeafTranscript" to "Consulter une transcription lorsque YouTube la rend disponible. L'import et l'affichage avancé seront ajoutés dans une prochaine version.",
-        "LeafTranslate" to "Traduire une transcription ou une description. Le moteur de traduction sera connecté dans une prochaine version.",
-        "LeafSummary" to "Préparer un résumé à partir d'une transcription accessible. Le résumé automatique sera ajouté ensuite.",
+        "LeafTranscript" to "Coller ou rédiger une transcription, puis la retrouver pour cette vidéo.",
+        "LeafTranslate" to "Enregistrer la traduction ou les passages traduits de cette vidéo. Traduction automatique non intégrée.",
+        "LeafSummary" to "Rédiger et conserver un résumé personnel de cette vidéo.",
+        "LeafSubtitles" to "Importer ou coller des sous-titres au format texte et les conserver par vidéo.",
         "LeafChapters" to "Conserver des repères temporels et retrouver les passages importants.",
         "LeafLinks" to "Noter et organiser les liens utiles associés à cette vidéo.",
-        "LeafVocabulary" to "Enregistrer des mots et expressions à retenir.",
+        "LeafVocabulary" to "Enregistrer des mots, expressions et définitions à retenir.",
         "LeafNotes" to "Écrire des notes personnelles liées à cette vidéo.",
         "LeafSimilar" to "Regrouper des vidéos et chaînes similaires.",
         "LeafDiscover" to "Rechercher et découvrir des chaînes et vidéos YouTube.",
@@ -143,7 +144,7 @@ class LeafPlayerActivity : Activity() {
             setPadding(0, 20, 0, 6)
         })
         content.addView(TextView(this).apply {
-            text = "La lecture utilise le lecteur officiel YouTube. Les outils sont installables dans cette barre ; leurs fonctions avancées seront activées progressivement."
+            text = "Les notes, chapitres, liens, transcriptions, traductions, résumés, sous-titres et vocabulaire sont enregistrés localement pour cette vidéo. Les textes doivent être fournis ou rédigés par toi : aucune génération automatique ni transcription YouTube n’est prétendue."
             setTextColor(Color.LTGRAY)
             textSize = 13f
         })
@@ -172,9 +173,17 @@ class LeafPlayerActivity : Activity() {
     }
 
     private fun showTool(name: String) {
-        if (name == "LeafNotes") { showSavedTextTool("notes", "Notes de cette vidéo"); return }
-        if (name == "LeafChapters") { showSavedTextTool("chapters", "Chapitres et horodatages"); return }
-        if (name == "LeafLinks") { showSavedTextTool("links", "Liens associés à cette vidéo"); return }
+        val savedTools = mapOf(
+            "LeafNotes" to ("notes" to "Notes de cette vidéo"),
+            "LeafChapters" to ("chapters" to "Chapitres et horodatages"),
+            "LeafLinks" to ("links" to "Liens associés à cette vidéo"),
+            "LeafTranscript" to ("transcript" to "Transcription de cette vidéo"),
+            "LeafTranslate" to ("translation" to "Traduction de cette vidéo"),
+            "LeafSummary" to ("summary" to "Résumé de cette vidéo"),
+            "LeafSubtitles" to ("subtitles" to "Sous-titres de cette vidéo"),
+            "LeafVocabulary" to ("vocabulary" to "Vocabulaire de cette vidéo")
+        )
+        savedTools[name]?.let { (kind, title) -> showSavedTextTool(kind, title); return }
         AlertDialog.Builder(this).setTitle(name)
             .setMessage(toolDescriptions[name] ?: "Outil Leaf")
             .setPositiveButton("Compris", null).show()
@@ -186,7 +195,16 @@ class LeafPlayerActivity : Activity() {
         val input = EditText(this).apply {
             minLines = 5
             setText(prefs.getString(key, ""))
-            hint = when(kind) { "chapters" -> "00:00 Introduction\\n02:35 Sujet suivant"; "links" -> "https://…"; else -> "Mes notes sur cette vidéo…" }
+            hint = when(kind) {
+                "chapters" -> "00:00 Introduction\\n02:35 Sujet suivant"
+                "links" -> "https://…"
+                "transcript" -> "Colle ici la transcription disponible…"
+                "translation" -> "Colle ou rédige ici ta traduction…"
+                "summary" -> "Résumé, idées clés et points à retenir…"
+                "subtitles" -> "Colle ici les sous-titres (texte ou SRT)…"
+                "vocabulary" -> "Mot — définition — exemple…"
+                else -> "Mes notes sur cette vidéo…"
+            }
         }
         AlertDialog.Builder(this).setTitle(title).setView(input)
             .setPositiveButton("Enregistrer") { _, _ -> prefs.edit().putString(key, input.text.toString()).apply() }
