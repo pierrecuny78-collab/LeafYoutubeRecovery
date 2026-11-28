@@ -318,9 +318,9 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
     var folderFilter by remember { mutableStateOf("Toutes") }
     var quickFilter by remember { mutableStateOf("Toutes") }
     var watchFilter by remember { mutableStateOf("Tous les statuts") }
-    var watchStatuses by remember { mutableStateOf(runCatching { JSONObject(videoPrefs.getString("video_watch_statuses", "{}") ?: "{}") }.getOrDefault(JSONObject())) }
     val context = LocalContext.current
     val videoPrefs = context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE)
+    var watchStatuses by remember { mutableStateOf(runCatching { JSONObject(videoPrefs.getString("video_watch_statuses", "{}") ?: "{}") }.getOrDefault(JSONObject())) }
     var favoriteVideoIds by remember { mutableStateOf(videoPrefs.getStringSet("video_favorites", emptySet())?.toSet() ?: emptySet()) }
     var historyVideoIds by remember { mutableStateOf(videoPrefs.getStringSet("video_history", emptySet())?.toSet() ?: emptySet()) }
     var globalPlaylists by remember { mutableStateOf(runCatching { JSONObject(context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE).getString("global_video_playlists", "{}") ?: "{}") }.getOrDefault(JSONObject())) }
