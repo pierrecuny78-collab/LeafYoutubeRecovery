@@ -81,3 +81,9 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Enregistrer automatiquement l'ouverture d'une vidéo dans l'historique du lecteur.
 - Actualiser les états après retour du lecteur.
 - Inclure favoris et historique dans les sauvegardes JSON (format 5), avec fusion non destructive à l'import.
+
+
+## Version 0.9.2 — Statuts de visionnage
+- Statut individuel par vidéo : À regarder, En cours ou Terminé.
+- Filtres croisés avec les favoris, l'historique, les catégories et les playlists.
+- Sauvegarde JSON des statuts avec fusion non destructive à l'import.
