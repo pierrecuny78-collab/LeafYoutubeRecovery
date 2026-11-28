@@ -3,6 +3,7 @@ package com.leafvibe.youtuberecovery
 import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
@@ -206,11 +207,20 @@ class LeafPlayerActivity : Activity() {
     }
 
     private fun extractVideoId(raw: String): String? {
-        val patterns = listOf(
-            Regex("(?:v=|youtu\\.be/|embed/|shorts/)([A-Za-z0-9_-]{11})"),
-            Regex("^([A-Za-z0-9_-]{11})$")
-        )
-        return patterns.firstNotNullOfOrNull { it.find(raw)?.groupValues?.getOrNull(1) }
+        val value = raw.trim()
+        if (value.matches(Regex("^[A-Za-z0-9_-]{11}$"))) return value
+        return runCatching {
+            val uri = Uri.parse(if (value.startsWith("http://") || value.startsWith("https://")) value else "https://$value")
+            val host = uri.host.orEmpty().lowercase()
+            val path = uri.path.orEmpty().trim('/').split('/').filter { it.isNotBlank() }
+            val id = when {
+                host == "youtu.be" || host.endsWith(".youtu.be") -> path.firstOrNull()
+                path.firstOrNull() in setOf("embed", "shorts", "live", "v") -> path.getOrNull(1)
+                uri.getQueryParameter("v") != null -> uri.getQueryParameter("v")
+                else -> null
+            }
+            id?.takeIf { it.matches(Regex("^[A-Za-z0-9_-]{11}$")) }
+        }.getOrNull()
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
