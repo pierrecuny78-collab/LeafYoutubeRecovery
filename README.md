@@ -54,3 +54,10 @@ Application ID : `com.leafvibe.youtuberecovery`
 ## Version 0.7.1 — Fiabilité des sauvegardes
 - Correction du format JSON des playlists globales dans les exports.
 - Import compatible avec les exports précédents où les playlists étaient sérialisées sous forme de texte JSON.
+
+
+## Version 0.8.0 — Connexions vidéo et sauvegarde complète
+- Gestion des playlists communes : création, renommage, suppression et classement des vidéos de plusieurs chaînes.
+- Reconnaissance plus fiable des liens YouTube standards, courts, Shorts, directs et intégrés.
+- Export JSON des notes, chapitres et liens enregistrés par vidéo.
+- Import fusionné des outils vidéo : les notes déjà présentes sur l'appareil ne sont pas écrasées.
