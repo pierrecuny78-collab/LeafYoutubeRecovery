@@ -98,3 +98,14 @@
 - [x] Exporter et fusionner les statuts dans les sauvegardes JSON
 - [ ] Historique ordonné par date et reprise de lecture
 - [ ] Fiche vidéo détaillée avec métadonnées et statistiques
+
+
+## 0.9.3 — Fiches vidéo et historique intelligent
+- [x] Enregistrer la date/heure de dernière ouverture de chaque vidéo
+- [x] Trier l'historique par ouverture la plus récente
+- [x] Fiche vidéo centralisant notes, chapitres, liens, favoris et statut
+- [x] Compteurs des vidéos en cours et terminées
+- [x] Sauvegarder et fusionner les dates d'historique
+- [ ] Reprise de lecture à la position précédente (si disponible via l'API du lecteur)
+- [ ] Actualisation automatique de la bibliothèque au retour du lecteur
+- [ ] Récupération des titres et descriptions via YouTube Data API
