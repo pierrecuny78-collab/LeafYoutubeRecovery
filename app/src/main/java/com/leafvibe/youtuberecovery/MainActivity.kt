@@ -95,8 +95,12 @@ private fun Detail(
     var playlists by remember(c.id) { mutableStateOf(c.playlists) }
     var collection by remember(c.id) { mutableStateOf(c.collection) }
     var description by remember(c.id) { mutableStateOf(c.description) }
-    var videoFolders by remember(c.id) {
-        mutableStateOf(runCatching { JSONObject(c.videoFolders) }.getOrDefault(JSONObject()))
+    val videoFolders = remember(c.id) {
+        mutableStateMapOf<String, String>().apply {
+            runCatching { JSONObject(c.videoFolders) }.getOrDefault(JSONObject()).let { saved ->
+                saved.keys().forEach { key -> put(key, saved.optString(key, "À classer")) }
+            }
+        }
     }
     var videoCategoryFilter by remember(c.id) { mutableStateOf("Toutes") }
     var favorite by remember(c.id) { mutableStateOf(c.favorite) }
@@ -170,14 +174,14 @@ private fun Detail(
                 }
                 val visibleCount = videoList.count {
                     videoCategoryFilter == "Toutes" ||
-                        videoFolders.optString(it, "À classer") == videoCategoryFilter
+                        (videoFolders[it] ?: "À classer") == videoCategoryFilter
                 }
                 Text("$visibleCount vidéo(s)", color = Color.LightGray)
             }
             items(
                 videoList.filter {
                     videoCategoryFilter == "Toutes" ||
-                        videoFolders.optString(it, "À classer") == videoCategoryFilter
+                        (videoFolders[it] ?: "À classer") == videoCategoryFilter
                 },
                 key = { it }
             ) { videoUrl ->
@@ -205,7 +209,7 @@ private fun Detail(
                             ) {
                                 Text("Vidéo $videoIndex", color = Color.White, fontWeight = FontWeight.Bold)
                                 Text(
-                                    videoFolders.optString(videoUrl, "À classer"),
+                                    (videoFolders[videoUrl] ?: "À classer"),
                                     color = Green,
                                     style = MaterialTheme.typography.bodySmall
                                 )
@@ -230,7 +234,7 @@ private fun Detail(
                                 DropdownMenuItem(
                                     text = { Text(folder) },
                                     onClick = {
-                                        videoFolders.put(videoUrl, folder)
+                                        videoFolders[videoUrl] = folder
                                         menuExpanded = false
                                     }
                                 )
@@ -283,7 +287,7 @@ private fun Detail(
                                 favorite = favorite,
                                 collection = collection,
                                 description = description,
-                                videoFolders = videoFolders.toString()
+                                videoFolders = JSONObject().apply { videoFolders.forEach { (url, folder) -> put(url, folder) } }.toString()
                             )
                         )
                     },
