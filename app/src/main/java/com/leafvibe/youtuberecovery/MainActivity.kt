@@ -316,6 +316,10 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
     var createPlaylistDialog by remember { mutableStateOf(false) }
     var newPlaylistName by remember { mutableStateOf("") }
     var playlistFilter by remember { mutableStateOf("Toutes") }
+    var managePlaylistsDialog by remember { mutableStateOf(false) }
+    var renamePlaylistName by remember { mutableStateOf<String?>(null) }
+    var renamedPlaylistText by remember { mutableStateOf("") }
+    var deletePlaylistName by remember { mutableStateOf<String?>(null) }
     val folders = listOf("À classer","À regarder","À revoir","Favoris","Tutoriels","Musique","Divertissement","Jeux vidéo","Autres")
     val playlistNames = globalPlaylists.keys().asSequence().toList().sorted()
     fun savePlaylists(updated: JSONObject) {
@@ -343,6 +347,7 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
         Text("${allVideos.size} vidéos enregistrées dans ${channels.count{it.videos.lines().any{line->line.isNotBlank()}}} chaîne(s)",color=Color.LightGray)
         Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             Button(onClick={createPlaylistDialog=true}, modifier=Modifier.weight(1f)) { Text("+ Nouvelle playlist") }
+            OutlinedButton(onClick={managePlaylistsDialog=true}, enabled=playlistNames.isNotEmpty()) { Text("Gérer") }
             OutlinedButton(onClick={playlistFilter="Toutes";folderFilter="Toutes";query=""}) { Text("Réinitialiser") }
         }
         OutlinedTextField(value=query,onValueChange={query=it},modifier=Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Rechercher une vidéo ou une chaîne")},leadingIcon={Icon(Icons.Default.Search,null)})
@@ -357,7 +362,7 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
         Text("${shown.size} résultat(s)",color=Green)
         LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)) {
             items(shown,key={it.channelId+"|"+it.url}) { video ->
-                val videoId=Regex("(?:v=|youtu\\\\.be/|embed/|shorts/|live/)([A-Za-z0-9_-]{11})").find(video.url)?.groupValues?.getOrNull(1)
+                val videoId=extractYouTubeVideoId(video.url)
                 var menuExpanded by remember(video.channelId,video.url) { mutableStateOf(false) }
                 Card(Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=Panel)) {
                     Column(Modifier.padding(10.dp)) {
@@ -402,6 +407,57 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
         }
         newPlaylistName=""; createPlaylistDialog=false
     }) { Text("Créer") }}, dismissButton={TextButton(onClick={createPlaylistDialog=false}) { Text("Annuler") }})
+    if (managePlaylistsDialog) AlertDialog(
+        onDismissRequest={managePlaylistsDialog=false},
+        title={Text("Gérer les playlists")},
+        text={Column(Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState())) {
+            if(playlistNames.isEmpty()) Text("Aucune playlist créée.")
+            playlistNames.forEach { name ->
+                Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(name,fontWeight=FontWeight.SemiBold)
+                        Text("${playlistUrls(name).size} vidéo(s)",color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
+                    }
+                    TextButton(onClick={renamedPlaylistText=name;renamePlaylistName=name;managePlaylistsDialog=false}) { Text("Renommer") }
+                    TextButton(onClick={deletePlaylistName=name;managePlaylistsDialog=false}) { Text("Supprimer",color=MaterialTheme.colorScheme.error) }
+                }
+            }
+        }},
+        confirmButton={TextButton(onClick={managePlaylistsDialog=false}) { Text("Fermer") }}
+    )
+    renamePlaylistName?.let { oldName ->
+        AlertDialog(
+            onDismissRequest={renamePlaylistName=null},
+            title={Text("Renommer la playlist")},
+            text={OutlinedTextField(value=renamedPlaylistText,onValueChange={renamedPlaylistText=it},singleLine=true,label={Text("Nouveau nom")})},
+            confirmButton={TextButton(onClick={
+                val newName=renamedPlaylistText.trim()
+                if(newName.isNotBlank() && (newName==oldName || !globalPlaylists.has(newName))) {
+                    val updated=JSONObject()
+                    globalPlaylists.keys().forEach { key -> updated.put(if(key==oldName)newName else key,globalPlaylists.optJSONArray(key) ?: JSONArray()) }
+                    savePlaylists(updated)
+                    if(playlistFilter==oldName) playlistFilter=newName
+                }
+                renamePlaylistName=null
+            }) { Text("Enregistrer") }},
+            dismissButton={TextButton(onClick={renamePlaylistName=null}) { Text("Annuler") }}
+        )
+    }
+    deletePlaylistName?.let { name ->
+        AlertDialog(
+            onDismissRequest={deletePlaylistName=null},
+            title={Text("Supprimer « $name » ?")},
+            text={Text("Seule la playlist sera supprimée. Les vidéos resteront dans leurs chaînes et dans la bibliothèque.")},
+            confirmButton={TextButton(onClick={
+                val updated=JSONObject()
+                globalPlaylists.keys().filterNot{it==name}.forEach{key->updated.put(key,globalPlaylists.optJSONArray(key)?:JSONArray())}
+                savePlaylists(updated)
+                if(playlistFilter==name) playlistFilter="Toutes"
+                deletePlaylistName=null
+            }) { Text("Supprimer") }},
+            dismissButton={TextButton(onClick={deletePlaylistName=null}) { Text("Annuler") }}
+        )
+    }
     playlistDialogVideo?.let { video ->
         AlertDialog(onDismissRequest={playlistDialogVideo=null}, title={Text("Ajouter à une playlist")}, text={Column(Modifier.heightIn(max=360.dp).verticalScroll(rememberScrollState())) {
             if(playlistNames.isEmpty()) Text("Crée d’abord une playlist commune.")
@@ -419,6 +475,22 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
             }
         }}, confirmButton={TextButton(onClick={playlistDialogVideo=null}) { Text("Terminé") }})
     }
+}
+
+private fun extractYouTubeVideoId(raw: String): String? {
+    val value = raw.trim()
+    if (value.matches(Regex("^[A-Za-z0-9_-]{11}$"))) return value
+    return runCatching {
+        val uri = Uri.parse(if (value.startsWith("http://") || value.startsWith("https://")) value else "https://$value")
+        val host = uri.host.orEmpty().lowercase()
+        val path = uri.path.orEmpty().trim('/').split('/').filter { it.isNotBlank() }
+        when {
+            host == "youtu.be" || host.endsWith(".youtu.be") -> path.firstOrNull()
+            path.firstOrNull() in setOf("embed", "shorts", "live", "v") -> path.getOrNull(1)
+            uri.getQueryParameter("v") != null -> uri.getQueryParameter("v")
+            else -> null
+        }?.takeIf { it.matches(Regex("^[A-Za-z0-9_-]{11}$")) }
+    }.getOrNull()
 }
 
 private fun playTool(context: android.content.Context, url: String, tool: String) {
