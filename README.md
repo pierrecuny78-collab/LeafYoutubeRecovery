@@ -87,3 +87,11 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Statut individuel par vidéo : À regarder, En cours ou Terminé.
 - Filtres croisés avec les favoris, l'historique, les catégories et les playlists.
 - Sauvegarde JSON des statuts avec fusion non destructive à l'import.
+
+
+## Version 0.9.3 — Fiches et historique intelligent
+- Fiche vidéo regroupant chaîne, catégorie, classement, statut, favoris, lien, notes, chapitres et liens associés.
+- Date de dernière ouverture enregistrée automatiquement par LeafPlayer.
+- Filtre Historique trié de la vidéo la plus récemment ouverte à la plus ancienne.
+- Compteurs des vidéos en cours et terminées.
+- Export/import JSON des dates d'historique avec fusion conservant la date la plus récente.
