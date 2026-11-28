@@ -2,7 +2,15 @@ name: Android APK
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'app/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+      - '.github/workflows/android.yml'
   workflow_dispatch:
+concurrency:
+  group: leafyoutube-recovery-android
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
