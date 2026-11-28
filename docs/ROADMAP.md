@@ -109,3 +109,10 @@
 - [ ] Reprise de lecture à la position précédente (si disponible via l'API du lecteur)
 - [ ] Actualisation automatique de la bibliothèque au retour du lecteur
 - [ ] Récupération des titres et descriptions via YouTube Data API
+
+
+## 0.9.4
+- [x] Activer les éditeurs locaux par vidéo pour transcription, traduction, résumé, sous-titres et vocabulaire.
+- [x] Relier les outils aux cartes de la bibliothèque et aux fiches de chaînes.
+- [x] Inclure les nouveaux contenus dans la sauvegarde JSON.
+- [ ] Connecter de vrais moteurs de transcription/traduction après choix d’un fournisseur et gestion sécurisée des clés.
