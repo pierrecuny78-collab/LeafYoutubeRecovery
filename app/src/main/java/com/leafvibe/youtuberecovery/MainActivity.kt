@@ -46,15 +46,16 @@ class MainActivity:ComponentActivity(){
  private fun load():List<Channel> = runCatching{val a=JSONArray(prefs.getString("channels","[]"));(0 until a.length()).map{a.getJSONObject(it).let{o->Channel(o.getString("id"),o.getString("name"),o.getString("url"),o.optString("category","Non classées"),o.optString("notes"),o.optString("videos"),o.optString("playlists"),o.optBoolean("favorite",false),o.optString("collection"),o.optString("description"),o.optString("videoFolders","{}"))}}}.getOrDefault(emptyList())
  private fun save(v:List<Channel>){val a=JSONArray();v.forEach{c->a.put(JSONObject().put("id",c.id).put("name",c.name).put("url",c.url).put("category",c.category).put("notes",c.notes).put("videos",c.videos).put("playlists",c.playlists).put("favorite",c.favorite).put("collection",c.collection) .put("description",c.description).put("videoFolders",c.videoFolders))};prefs.edit().putString("channels",a.toString()).apply()}
  override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(!prefs.getBoolean("dock_v04_migrated",false)){val all=setOf("LeafPlayer","LeafTranscript","LeafTranslate","LeafSummary","LeafSubtitles","LeafChapters","LeafLinks","LeafVocabulary","LeafNotes","LeafSimilar","LeafDiscover","LeafPlaylist","LeafGraph","LeafStats","LeafSound","LeafColour","LeafBridge","LeafTracker","LeafWallpaper","LeafSearch","LeafExport");prefs.edit().putStringSet("home_tools",(prefs.getStringSet("home_tools",emptySet())?:emptySet())+all).putBoolean("dock_v04_migrated",true).apply()};setContent{
-  var cats by remember{mutableStateOf(readCategories())};var channels by remember{mutableStateOf(load())};var selected by remember{mutableStateOf<Channel?>(null)}
+  var cats by remember{mutableStateOf(readCategories())};var channels by remember{mutableStateOf(load())};var selected by remember{mutableStateOf<Channel?>(null)};var showVideoLibrary by remember{mutableStateOf(false)}
   MaterialTheme(colorScheme=darkColorScheme(primary=Green,background=Navy,surface=Panel,onPrimary=Navy,onBackground=Color.White,onSurface=Color.White)){
-   if(selected==null) Home(cats,channels,{cats=it;saveCategories(it)},{channels=it;save(it)},{selected=it},{q->startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/results?search_query="+Uri.encode(q))))})
+   if(showVideoLibrary) VideoLibrary(channels,{updated->channels=updated;save(updated)},{showVideoLibrary=false},{u->startActivity(Intent(this@MainActivity,LeafPlayerActivity::class.java).putExtra("video_url",u))})
+   else if(selected==null) Home(cats,channels,{cats=it;saveCategories(it)},{channels=it;save(it)},{selected=it},{q->startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/results?search_query="+Uri.encode(q))))},{showVideoLibrary=true})
    else Detail(selected!!,cats,{selected=null},{u->channels=channels.map{if(it.id==u.id)u else it};save(channels);selected=u},{channels=channels.filterNot{it.id==selected!!.id};save(channels);selected=null},{u->startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(if(u.startsWith("http"))u else "https://www.youtube.com/$u")))})
   }
  }}
 }
 
-@Composable private fun Home(cats:List<String>,channels:List<Channel>,saveCats:(List<String>)->Unit,saveChannels:(List<Channel>)->Unit,open:(Channel)->Unit,search:(String)->Unit){
+@Composable private fun Home(cats:List<String>,channels:List<Channel>,saveCats:(List<String>)->Unit,saveChannels:(List<Channel>)->Unit,open:(Channel)->Unit,search:(String)->Unit,openLibrary:()->Unit){
  var filter by remember{mutableStateOf("Toutes")};var query by remember{mutableStateOf("")};val context=LocalContext.current;var toolDialog by remember{mutableStateOf(false)};var selectedTool by remember{mutableStateOf("LeafPlayer")};var backupDialog by remember{mutableStateOf(false)};var backupText by remember{mutableStateOf("")};var tools by remember{mutableStateOf(context.getSharedPreferences("leaf_youtube_recovery",Context.MODE_PRIVATE).getStringSet("home_tools",setOf("LeafPlayer","LeafTranscript","LeafTranslate","LeafSummary","LeafSubtitles","LeafChapters","LeafLinks","LeafVocabulary","LeafNotes","LeafSimilar","LeafDiscover","LeafPlaylist","LeafGraph","LeafStats","LeafSound","LeafColour","LeafBridge","LeafTracker","LeafWallpaper","LeafSearch","LeafExport"))!!.toSet())};val availableTools=listOf("LeafPlayer","LeafTranscript","LeafTranslate","LeafSummary","LeafSubtitles","LeafChapters","LeafLinks","LeafVocabulary","LeafNotes","LeafSimilar","LeafDiscover","LeafPlaylist","LeafGraph","LeafStats","LeafSound","LeafColour","LeafBridge","LeafTracker","LeafWallpaper","LeafSearch","LeafExport")
  var catDialog by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<String?>(null)};var catName by remember{mutableStateOf("")}
  var addDialog by remember{mutableStateOf(false)};var name by remember{mutableStateOf("")};var url by remember{mutableStateOf("")};var newCat by remember{mutableStateOf("Non classées")}
@@ -62,6 +63,7 @@ class MainActivity:ComponentActivity(){
  Scaffold(containerColor=Navy,bottomBar={Surface(color=Panel,tonalElevation=8.dp){Column(Modifier.fillMaxWidth().padding(vertical=6.dp)){Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal=8.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)){tools.sortedBy{availableTools.indexOf(it)}.forEach{name->Surface(onClick={selectedTool=name;toolDialog=true},shape=MaterialTheme.shapes.medium,color=if(name=="LeafPlayer")Green else Navy){Column(Modifier.padding(horizontal=12.dp, vertical=8.dp),horizontalAlignment=androidx.compose.ui.Alignment.CenterHorizontally){Text(name.removePrefix("Leaf"),color=if(name=="LeafPlayer")Navy else Color.White,fontWeight=FontWeight.SemiBold,maxLines=1);Text("Leaf",color=if(name=="LeafPlayer")Navy else Green,style=MaterialTheme.typography.labelSmall)}}}};Row(Modifier.fillMaxWidth().padding(horizontal=12.dp),horizontalArrangement=Arrangement.End){TextButton(onClick={toolDialog=true;selectedTool="Gérer les applications"}){Text("Gérer les applications",color=Green)}}}}},floatingActionButton={FloatingActionButton(onClick={addDialog=true},containerColor=Green,contentColor=Navy){Icon(Icons.Default.Add,"Ajouter")}}){p->
  Column(Modifier.fillMaxSize().padding(p).padding(16.dp)){
  Text("LEAF COLOUR",color=Green,fontWeight=FontWeight.Bold);Text("YoutubeRecovery",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold);Text("Bibliothèque de chaînes YouTube",color=Color.LightGray)
+ Button(onClick=openLibrary,modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Green,contentColor=Navy)){Text("Ouvrir la bibliothèque vidéo globale  ·  "+channels.sumOf{it.videos.lines().count{line->line.isNotBlank()}}+" vidéos")}
  OutlinedTextField(query,{query=it},Modifier.fillMaxWidth(),placeholder={Text("Rechercher mes chaînes")},leadingIcon={Icon(Icons.Default.Search,null)},singleLine=true)
  TextButton(onClick={search(query)},enabled=query.isNotBlank()){Text("Rechercher sur YouTube")}
  Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){Text("Catégories",style=MaterialTheme.typography.titleLarge);Spacer(Modifier.weight(1f));TextButton(onClick={editing=null;catName="";catDialog=true}){Icon(Icons.Default.Add,null);Text("Ajouter")}}
@@ -297,6 +299,71 @@ private fun Detail(
                     onClick = delete,
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("Supprimer cette fiche") }
+            }
+        }
+    }
+}
+
+private data class LibraryVideo(val channelId:String,val channelName:String,val channelCategory:String,val url:String,val folder:String)
+
+@Composable
+private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Unit,back:()->Unit,play:(String)->Unit) {
+    var query by remember { mutableStateOf("") }
+    var folderFilter by remember { mutableStateOf("Toutes") }
+    val folders = listOf("À classer","À regarder","À revoir","Favoris","Tutoriels","Musique","Divertissement","Jeux vidéo","Autres")
+    val allVideos = channels.flatMap { channel ->
+        val saved = runCatching { JSONObject(channel.videoFolders) }.getOrDefault(JSONObject())
+        channel.videos.lines().map { it.trim() }.filter { it.isNotBlank() }.distinct().map { url ->
+            LibraryVideo(channel.id,channel.name,channel.category,url,saved.optString(url,"À classer"))
+        }
+    }
+    val shown = allVideos.filter { video ->
+        (folderFilter=="Toutes" || video.folder==folderFilter) &&
+        (query.isBlank() || video.url.contains(query,true) || video.channelName.contains(query,true))
+    }
+    Column(Modifier.fillMaxSize().background(Navy).padding(16.dp)) {
+        TextButton(onClick=back) { Text("← Retour aux chaînes") }
+        Text("Bibliothèque vidéo",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
+        Text("${allVideos.size} vidéos enregistrées dans ${channels.count{it.videos.lines().any{line->line.isNotBlank()}}} chaîne(s)",color=Color.LightGray)
+        OutlinedTextField(value=query,onValueChange={query=it},modifier=Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Rechercher une vidéo ou une chaîne")},leadingIcon={Icon(Icons.Default.Search,null)})
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+            FilterChip(selected=folderFilter=="Toutes",onClick={folderFilter="Toutes"},label={Text("Toutes (${allVideos.size})")})
+            folders.forEach { folder -> FilterChip(selected=folderFilter==folder,onClick={folderFilter=folder},label={Text("$folder (${allVideos.count{it.folder==folder}})")}) }
+        }
+        Text("${shown.size} résultat(s)",color=Green)
+        LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)) {
+            items(shown,key={it.channelId+"|"+it.url}) { video ->
+                val videoId=Regex("(?:v=|youtu\\\\.be/|embed/|shorts/|live/)([A-Za-z0-9_-]{11})").find(video.url)?.groupValues?.getOrNull(1)
+                var menuExpanded by remember(video.channelId,video.url) { mutableStateOf(false) }
+                Card(Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=Panel)) {
+                    Column(Modifier.padding(10.dp)) {
+                        Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                            if(videoId!=null) AsyncImage(model="https://img.youtube.com/vi/$videoId/hqdefault.jpg",contentDescription="Miniature vidéo",modifier=Modifier.width(104.dp).height(60.dp))
+                            Column(Modifier.weight(1f).padding(start=8.dp)) {
+                                Text(video.channelName,fontWeight=FontWeight.Bold,color=Color.White)
+                                Text(video.folder,color=Green,style=MaterialTheme.typography.bodySmall)
+                                Text(video.url,maxLines=1,color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
+                            }
+                            Button(onClick={play(video.url)}) { Text("Lire") }
+                        }
+                        Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                            TextButton(onClick={menuExpanded=true}) { Text("Classer") }
+                            Spacer(Modifier.weight(1f))
+                            Text(video.channelCategory,color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
+                        }
+                        DropdownMenu(expanded=menuExpanded,onDismissRequest={menuExpanded=false}) {
+                            folders.forEach { folder -> DropdownMenuItem(text={Text(folder)},onClick={
+                                val target=channels.firstOrNull{it.id==video.channelId}
+                                if(target!=null) {
+                                    val updatedFolders=runCatching{JSONObject(target.videoFolders)}.getOrDefault(JSONObject())
+                                    updatedFolders.put(video.url,folder)
+                                    saveChannels(channels.map{if(it.id==video.channelId)it.copy(videoFolders=updatedFolders.toString())else it})
+                                }
+                                menuExpanded=false
+                            }) }
+                        }
+                    }
+                }
             }
         }
     }
