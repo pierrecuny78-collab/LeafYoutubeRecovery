@@ -41,3 +41,11 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Depuis la bibliothèque vidéo globale, ouvrir directement les notes, chapitres ou liens d'une vidéo.
 - LeafPlayer reçoit l'outil demandé et ouvre directement son espace associé à la vidéo.
 - Les notes, chapitres et liens restent stockés par identifiant de vidéo dans les préférences locales.
+
+
+## Version 0.7.0 — Playlists communes
+- Création de playlists globales qui regroupent des vidéos de plusieurs chaînes.
+- Ajout et retrait d'une vidéo d'une ou plusieurs playlists depuis sa carte.
+- Filtrage de la bibliothèque par playlist.
+- Export JSON version 3 incluant les playlists communes.
+- Import JSON avec fusion des playlists et déduplication des URL.
