@@ -89,3 +89,12 @@
 - [x] Export/import des favoris et de l'historique sans écraser les données locales
 - [ ] Historique trié par date avec reprise de lecture
 - [ ] Statut de visionnage manuel (à voir / en cours / terminé)
+
+
+## 0.9.2 — Suivi de visionnage
+- [x] Statut individuel par vidéo : à regarder, en cours, terminé
+- [x] Filtrer la bibliothèque selon le statut de visionnage
+- [x] Combiner les statuts avec les favoris, l'historique, les catégories et les playlists
+- [x] Exporter et fusionner les statuts dans les sauvegardes JSON
+- [ ] Historique ordonné par date et reprise de lecture
+- [ ] Fiche vidéo détaillée avec métadonnées et statistiques
