@@ -73,3 +73,11 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Depuis la bibliothèque vidéo globale, revenir directement à la fiche de la chaîne d'origine.
 - Afficher les indicateurs Notes, Chapitres et Liens lorsqu'un contenu existe déjà pour la vidéo.
 - Utiliser le même extracteur d'identifiant YouTube dans les fiches et la bibliothèque, y compris pour les URL Shorts, live, embed et youtu.be.
+
+
+## Version 0.9.1 — Favoris et historique vidéo
+- Ajouter et retirer une vidéo des favoris depuis la bibliothèque globale.
+- Filtrer la bibliothèque par favoris et historique des vidéos ouvertes.
+- Enregistrer automatiquement l'ouverture d'une vidéo dans l'historique du lecteur.
+- Actualiser les états après retour du lecteur.
+- Inclure favoris et historique dans les sauvegardes JSON (format 5), avec fusion non destructive à l'import.
