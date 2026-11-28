@@ -310,23 +310,46 @@ private data class LibraryVideo(val channelId:String,val channelName:String,val 
 private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Unit,back:()->Unit,play:(String)->Unit) {
     var query by remember { mutableStateOf("") }
     var folderFilter by remember { mutableStateOf("Toutes") }
+    val context = LocalContext.current
+    var globalPlaylists by remember { mutableStateOf(runCatching { JSONObject(context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE).getString("global_video_playlists", "{}") ?: "{}") }.getOrDefault(JSONObject())) }
+    var playlistDialogVideo by remember { mutableStateOf<LibraryVideo?>(null) }
+    var createPlaylistDialog by remember { mutableStateOf(false) }
+    var newPlaylistName by remember { mutableStateOf("") }
+    var playlistFilter by remember { mutableStateOf("Toutes") }
     val folders = listOf("À classer","À regarder","À revoir","Favoris","Tutoriels","Musique","Divertissement","Jeux vidéo","Autres")
+    val playlistNames = globalPlaylists.keys().asSequence().toList().sorted()
+    fun savePlaylists(updated: JSONObject) {
+        globalPlaylists = updated
+        context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE).edit().putString("global_video_playlists", updated.toString()).apply()
+    }
+    fun playlistUrls(name: String): Set<String> {
+        val arr = globalPlaylists.optJSONArray(name) ?: JSONArray()
+        return (0 until arr.length()).mapNotNull { arr.optString(it).takeIf { value -> value.isNotBlank() } }.toSet()
+    }
     val allVideos = channels.flatMap { channel ->
         val saved = runCatching { JSONObject(channel.videoFolders) }.getOrDefault(JSONObject())
         channel.videos.lines().map { it.trim() }.filter { it.isNotBlank() }.distinct().map { url ->
             LibraryVideo(channel.id,channel.name,channel.category,url,saved.optString(url,"À classer"))
         }
     }
-    val context = LocalContext.current
     val shown = allVideos.filter { video ->
         (folderFilter=="Toutes" || video.folder==folderFilter) &&
+        (playlistFilter=="Toutes" || video.url in playlistUrls(playlistFilter)) &&
         (query.isBlank() || video.url.contains(query,true) || video.channelName.contains(query,true))
     }
     Column(Modifier.fillMaxSize().background(Navy).padding(16.dp)) {
         TextButton(onClick=back) { Text("← Retour aux chaînes") }
         Text("Bibliothèque vidéo",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
         Text("${allVideos.size} vidéos enregistrées dans ${channels.count{it.videos.lines().any{line->line.isNotBlank()}}} chaîne(s)",color=Color.LightGray)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            Button(onClick={createPlaylistDialog=true}, modifier=Modifier.weight(1f)) { Text("+ Nouvelle playlist") }
+            OutlinedButton(onClick={playlistFilter="Toutes";folderFilter="Toutes";query=""}) { Text("Réinitialiser") }
+        }
         OutlinedTextField(value=query,onValueChange={query=it},modifier=Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Rechercher une vidéo ou une chaîne")},leadingIcon={Icon(Icons.Default.Search,null)})
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+            FilterChip(selected=playlistFilter=="Toutes",onClick={playlistFilter="Toutes"},label={Text("Toutes les playlists")})
+            playlistNames.forEach { name -> FilterChip(selected=playlistFilter==name,onClick={playlistFilter=name},label={Text("$name (${playlistUrls(name).size})")}) }
+        }
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
             FilterChip(selected=folderFilter=="Toutes",onClick={folderFilter="Toutes"},label={Text("Toutes (${allVideos.size})")})
             folders.forEach { folder -> FilterChip(selected=folderFilter==folder,onClick={folderFilter=folder},label={Text("$folder (${allVideos.count{it.folder==folder}})")}) }
@@ -352,6 +375,7 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
                             TextButton(onClick={playTool(context,video.url,"LeafNotes")}) { Text("Notes") }
                             TextButton(onClick={playTool(context,video.url,"LeafChapters")}) { Text("Chapitres") }
                             TextButton(onClick={playTool(context,video.url,"LeafLinks")}) { Text("Liens") }
+                            TextButton(onClick={playlistDialogVideo=video}) { Text("Playlist") }
                         }
                         Text("Chaîne : ${video.channelCategory}",color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
                         DropdownMenu(expanded=menuExpanded,onDismissRequest={menuExpanded=false}) {
@@ -369,6 +393,31 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
                 }
             }
         }
+    }
+    if (createPlaylistDialog) AlertDialog(onDismissRequest={createPlaylistDialog=false}, title={Text("Créer une playlist commune")}, text={OutlinedTextField(value=newPlaylistName,onValueChange={newPlaylistName=it},label={Text("Nom de la playlist")},singleLine=true)}, confirmButton={TextButton(onClick={
+        val name=newPlaylistName.trim()
+        if(name.isNotBlank() && !globalPlaylists.has(name)) {
+            val updated=JSONObject(globalPlaylists.toString()).put(name,JSONArray())
+            savePlaylists(updated); playlistFilter=name
+        }
+        newPlaylistName=""; createPlaylistDialog=false
+    }) { Text("Créer") }}, dismissButton={TextButton(onClick={createPlaylistDialog=false}) { Text("Annuler") }})
+    playlistDialogVideo?.let { video ->
+        AlertDialog(onDismissRequest={playlistDialogVideo=null}, title={Text("Ajouter à une playlist")}, text={Column(Modifier.heightIn(max=360.dp).verticalScroll(rememberScrollState())) {
+            if(playlistNames.isEmpty()) Text("Crée d’abord une playlist commune.")
+            playlistNames.forEach { name ->
+                val selectedUrl=video.url in playlistUrls(name)
+                Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                    Checkbox(checked=selectedUrl,onCheckedChange={checked->
+                        val updated=JSONObject(globalPlaylists.toString())
+                        val urls=playlistUrls(name).toMutableSet()
+                        if(checked) urls.add(video.url) else urls.remove(video.url)
+                        updated.put(name,JSONArray(urls.toList())); savePlaylists(updated)
+                    })
+                    Text(name)
+                }
+            }
+        }}, confirmButton={TextButton(onClick={playlistDialogVideo=null}) { Text("Terminé") }})
     }
 }
 
