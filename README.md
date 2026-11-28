@@ -49,3 +49,8 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Filtrage de la bibliothèque par playlist.
 - Export JSON version 3 incluant les playlists communes.
 - Import JSON avec fusion des playlists et déduplication des URL.
+
+
+## Version 0.7.1 — Fiabilité des sauvegardes
+- Correction du format JSON des playlists globales dans les exports.
+- Import compatible avec les exports précédents où les playlists étaient sérialisées sous forme de texte JSON.
