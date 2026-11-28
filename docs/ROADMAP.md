@@ -66,3 +66,7 @@
 - [x] Reconnaître les URL YouTube youtu.be, watch, embed, Shorts et live
 - [x] Exporter les notes, chapitres et liens associés à chaque vidéo
 - [x] Restaurer les données vidéo sans écraser les données locales existantes
+
+
+## 0.8.1 — Correction
+- [x] Corriger l'itération des playlists lors de leur suppression
