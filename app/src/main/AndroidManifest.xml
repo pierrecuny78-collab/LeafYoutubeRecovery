@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
  <uses-permission android:name="android.permission.INTERNET" />
+ <queries>
+  <package android:name="org.leafvibe.leafbridge" />
+  <package android:name="com.leafvibe.leafnotes" />
+  <package android:name="com.leafvibe.leafsound" />
+  <package android:name="com.leafvibe.leaftracker" />
+  <package android:name="fr.leafvibe.leafactu" />
+ </queries>
  <application android:allowBackup="true" android:label="LeafYoutubeRecovery" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:icon="@drawable/ic_leaf_youtube_recovery" android:supportsRtl="true">
   <activity android:name=".LeafPlayerActivity" android:exported="false" />
   <activity android:name=".MainActivity" android:exported="true">
