@@ -30,6 +30,13 @@
 - [ ] Chaînes et vidéos similaires
 - [ ] LeafGraph : relations entre chaînes et créateurs
 
+## 0.6.0 — Bibliothèque vidéo centrale
+- [x] Regrouper les vidéos de toutes les chaînes dans un écran unique
+- [x] Rechercher une vidéo par URL ou par chaîne
+- [x] Filtrer par catégorie vidéo
+- [x] Modifier le classement depuis la bibliothèque globale
+- [x] Ouvrir une vidéo directement dans LeafPlayer
+
 ## 0.5.0 — Fiabilité et personnalisation
 - [ ] Import/export JSON et sauvegarde ZIP
 - [ ] Room, migrations, sauvegardes et restauration
