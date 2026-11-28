@@ -450,7 +450,7 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
             text={Text("Seule la playlist sera supprimée. Les vidéos resteront dans leurs chaînes et dans la bibliothèque.")},
             confirmButton={TextButton(onClick={
                 val updated=JSONObject()
-                globalPlaylists.keys().filterNot{it==name}.forEach{key->updated.put(key,globalPlaylists.optJSONArray(key)?:JSONArray())}
+                globalPlaylists.keys().asSequence().filterNot{it==name}.forEach{key->updated.put(key,globalPlaylists.optJSONArray(key)?:JSONArray())}
                 savePlaylists(updated)
                 if(playlistFilter==name) playlistFilter="Toutes"
                 deletePlaylistName=null
