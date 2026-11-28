@@ -103,3 +103,13 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Les fiches vidéo affichent également les contenus enregistrés dans ces nouveaux outils.
 - L’export/import JSON inclut tous les contenus texte par vidéo (notes, chapitres, liens, transcription, traduction, résumé, sous-titres et vocabulaire).
 - Les modules de la barre d’accueil orientent vers la bibliothèque vidéo pour sélectionner un contenu. Les fonctions automatiques externes ne sont pas simulées : elles restent explicitement identifiées comme non intégrées.
+
+
+## Version 0.9.5 — Connexions des modules internes
+- Les modules vidéo de la barre Leaf ouvrent leur éditeur après sélection d'une vidéo dans la bibliothèque.
+- LeafStats affiche les statistiques locales (chaînes, catégories, vidéos, favoris, historique, statuts et playlists).
+- LeafGraph présente les relations entre catégories et chaînes enregistrées.
+- LeafSimilar regroupe les chaînes par catégorie pour faciliter leur comparaison.
+- LeafDiscover lance une recherche YouTube depuis son écran ; LeafSearch recherche localement dans les chaînes enregistrées.
+- LeafPlaylist ouvre le gestionnaire de playlists multi-chaînes existant.
+- Les applications Leaf autonomes restent à connecter via leurs identifiants Android officiels : aucune connexion fictive n'est affichée.
