@@ -41,7 +41,7 @@ class LeafPlayerActivity : Activity() {
     )
     private fun saveTools() {
         getSharedPreferences("leaf_youtube_recovery", MODE_PRIVATE).edit()
-            .putStringSet("active_video_tools", tools.toSet()).putStringSet("home_tools", tools.toSet()).apply()
+            .putStringSet("active_video_tools", tools.toSet()).apply()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
