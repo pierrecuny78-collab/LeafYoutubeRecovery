@@ -125,3 +125,12 @@
 - [x] LeafDiscover et LeafSearch utilisables.
 - [x] LeafPlaylist relié au gestionnaire global.
 - [ ] Connexion inter-applications des Leaf autonomes après confirmation des package IDs et contrats d'échange.
+
+
+## 0.9.6
+- [x] Validation et normalisation des liens de chaînes YouTube.
+- [x] Prévention des doublons d'URL à l'ajout.
+- [x] Recherche dans le nom, l'URL, la description et les notes.
+- [ ] Résolution automatique des noms/descriptions depuis l'API YouTube (nécessite une stratégie API et une clé fournie par l'utilisateur).
+- [ ] Import/export JSON par sélecteur de fichier Android avec aperçu et restauration contrôlée.
+- [ ] Tests instrumentés sur Android réel, notamment lecture WebView, arrière-plan et reprise d'activité.
