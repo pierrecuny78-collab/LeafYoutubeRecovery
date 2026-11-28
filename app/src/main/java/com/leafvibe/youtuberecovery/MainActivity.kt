@@ -79,10 +79,221 @@ class MainActivity:ComponentActivity(){
  if(addDialog)AlertDialog(onDismissRequest={addDialog=false},title={Text("Ajouter une chaîne existante")},text={Column{OutlinedTextField(name,{name=it},label={Text("Nom")});OutlinedTextField(url,{url=it},label={Text("URL ou identifiant YouTube")});Text("Catégorie");cats.forEach{c->Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){RadioButton(newCat==c,{newCat=c});Text(c)}};TextButton(onClick={search(name)},enabled=name.isNotBlank()){Text("Chercher sur YouTube")}}},confirmButton={TextButton(enabled=name.isNotBlank()&&url.isNotBlank(),onClick={saveChannels(channels+Channel(System.currentTimeMillis().toString(),name.trim(),url.trim(),newCat));name="";url="";addDialog=false}){Text("Ajouter")}},dismissButton={TextButton(onClick={addDialog=false}){Text("Annuler")}})
 }
 
-@Composable private fun Detail(c:Channel,cats:List<String>,back:()->Unit,save:(Channel)->Unit,delete:()->Unit,openLink:(String)->Unit){
- val context=LocalContext.current
- var category by remember(c.id){mutableStateOf(c.category)};var notes by remember(c.id){mutableStateOf(c.notes)};var videos by remember(c.id){mutableStateOf(c.videos)};var playlists by remember(c.id){mutableStateOf(c.playlists)};var collection by remember(c.id){mutableStateOf(c.collection)};var description by remember(c.id){mutableStateOf(c.description)};var videoFolders by remember(c.id){mutableStateOf(runCatching{JSONObject(c.videoFolders)}.getOrDefault(JSONObject()))};var videoCategoryFilter by remember(c.id){mutableStateOf("Toutes")};var favorite by remember(c.id){mutableStateOf(c.favorite)}
- Column(Modifier.fillMaxSize().background(Navy).padding(16.dp)){TextButton(onClick=back){Text("← Retour")};Text(c.name,style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold);Text(c.url,color=Color.LightGray);if(c.description.isNotBlank())Text(c.description,color=Color.LightGray);Button(onClick={openLink(c.url)}){Text("Ouvrir sur YouTube")}
- LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)){item{Text("Description de la chaîne",color=Green);OutlinedTextField(description,{description=it},Modifier.fillMaxWidth(),minLines=3,label={Text("Présentation, contenu, thèmes…")})};item{Text("Catégorie",color=Green);cats.forEach{RadioButton(category==it,{category=it});Text(it)}};item{Text("Vidéos enregistrées",color=Green);Text("Colle une URL YouTube par ligne. Les vidéos sont lues dans LeafPlayer sans téléchargement.",color=Color.LightGray);OutlinedTextField(videos,{videos=it},Modifier.fillMaxWidth(),minLines=4,label={Text("Une URL par ligne")})};item{val videoList=videos.lines().map{it.trim()}.filter{it.isNotBlank()};val folderNames=listOf("À classer","À regarder","À revoir","Favoris","Tutoriels","Musique","Divertissement","Jeux vidéo","Autres");Text("Collections de vidéos",color=Green);Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)){FilterChip(videoCategoryFilter=="Toutes",{videoCategoryFilter="Toutes"},label={Text("Toutes")});folderNames.forEach{folder->FilterChip(videoCategoryFilter==folder,{videoCategoryFilter=folder},label={Text(folder)})}};Text("${videoList.count{videoCategoryFilter=="Toutes"||(videoFolders.optString(it,"À classer")==videoCategoryFilter)}} vidéo(s)",color=Color.LightGray);videoList.filter{videoCategoryFilter=="Toutes"||videoFolders.optString(it,"À classer")==videoCategoryFilter}.forEachIndexed{index,videoUrl->val videoId=Regex("(?:v=|youtu\\.be/|embed/|shorts/)([A-Za-z0-9_-]{11})").find(videoUrl)?.groupValues?.getOrNull(1);Card(Modifier.fillMaxWidth().padding(vertical=4.dp),colors=CardDefaults.cardColors(containerColor=Panel)){Column(Modifier.padding(8.dp)){Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){if(videoId!=null)AsyncImage(model="https://img.youtube.com/vi/$videoId/hqdefault.jpg",contentDescription="Miniature vidéo",modifier=Modifier.width(104.dp).height(60.dp));Column(Modifier.weight(1f).padding(start=8.dp)){Text("Vidéo ${index+1}",color=Color.White,fontWeight=FontWeight.Bold);Text(videoFolders.optString(videoUrl,"À classer"),color=Green,style=MaterialTheme.typography.bodySmall)};Button(onClick={context.startActivity(Intent(context,LeafPlayerActivity::class.java).putExtra("video_url",videoUrl))}){Text("Lire")}};var expanded by remember(videoUrl){mutableStateOf(false)};TextButton(onClick={expanded=true}){Text("Ranger dans une catégorie")};DropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){folderNames.forEach{folder->DropdownMenuItem(text={Text(folder)},onClick={videoFolders.put(videoUrl,folder);expanded=false})}}}}}}};item{Text("Collection personnelle",color=Green);OutlinedTextField(collection,{collection=it},Modifier.fillMaxWidth())};item{Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){Checkbox(favorite,{favorite=it});Text("Ajouter aux favoris")}};item{Text("Playlists",color=Green);OutlinedTextField(playlists,{playlists=it},Modifier.fillMaxWidth(),minLines=2)};item{Text("LeafNotes de cette chaîne",color=Green);OutlinedTextField(notes,{notes=it},Modifier.fillMaxWidth(),minLines=5)};item{Button(onClick={save(c.copy(category=category,notes=notes,videos=videos,playlists=playlists,favorite=favorite,collection=collection,description=description,videoFolders=videoFolders.toString()))},Modifier.fillMaxWidth()){Text("Enregistrer")};OutlinedButton(onClick=delete,Modifier.fillMaxWidth()){Text("Supprimer cette fiche")}}}
- }
+@Composable
+private fun Detail(
+    c: Channel,
+    cats: List<String>,
+    back: () -> Unit,
+    save: (Channel) -> Unit,
+    delete: () -> Unit,
+    openLink: (String) -> Unit
+) {
+    val context = LocalContext.current
+    var category by remember(c.id) { mutableStateOf(c.category) }
+    var notes by remember(c.id) { mutableStateOf(c.notes) }
+    var videos by remember(c.id) { mutableStateOf(c.videos) }
+    var playlists by remember(c.id) { mutableStateOf(c.playlists) }
+    var collection by remember(c.id) { mutableStateOf(c.collection) }
+    var description by remember(c.id) { mutableStateOf(c.description) }
+    var videoFolders by remember(c.id) {
+        mutableStateOf(runCatching { JSONObject(c.videoFolders) }.getOrDefault(JSONObject()))
+    }
+    var videoCategoryFilter by remember(c.id) { mutableStateOf("Toutes") }
+    var favorite by remember(c.id) { mutableStateOf(c.favorite) }
+    val folderNames = listOf(
+        "À classer", "À regarder", "À revoir", "Favoris",
+        "Tutoriels", "Musique", "Divertissement", "Jeux vidéo", "Autres"
+    )
+    val videoList = videos.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+    Column(
+        modifier = Modifier.fillMaxSize().background(Navy).padding(16.dp)
+    ) {
+        TextButton(onClick = back) { Text("← Retour") }
+        Text(c.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(c.url, color = Color.LightGray)
+        if (c.description.isNotBlank()) Text(c.description, color = Color.LightGray)
+        Button(onClick = { openLink(c.url) }) { Text("Ouvrir sur YouTube") }
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            item {
+                Text("Description de la chaîne", color = Green)
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    label = { Text("Présentation, contenu, thèmes…") }
+                )
+            }
+            item {
+                Text("Catégorie", color = Green)
+                cats.forEach { cat ->
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        RadioButton(selected = category == cat, onClick = { category = cat })
+                        Text(cat)
+                    }
+                }
+            }
+            item {
+                Text("Vidéos enregistrées", color = Green)
+                Text(
+                    "Colle une URL YouTube par ligne. Les vidéos sont lues dans LeafPlayer sans téléchargement.",
+                    color = Color.LightGray
+                )
+                OutlinedTextField(
+                    value = videos,
+                    onValueChange = { videos = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 4,
+                    label = { Text("Une URL par ligne") }
+                )
+            }
+            item {
+                Text("Collections de vidéos", color = Green)
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    FilterChip(
+                        selected = videoCategoryFilter == "Toutes",
+                        onClick = { videoCategoryFilter = "Toutes" },
+                        label = { Text("Toutes") }
+                    )
+                    folderNames.forEach { folder ->
+                        FilterChip(
+                            selected = videoCategoryFilter == folder,
+                            onClick = { videoCategoryFilter = folder },
+                            label = { Text(folder) }
+                        )
+                    }
+                }
+                val visibleCount = videoList.count {
+                    videoCategoryFilter == "Toutes" ||
+                        videoFolders.optString(it, "À classer") == videoCategoryFilter
+                }
+                Text("$visibleCount vidéo(s)", color = Color.LightGray)
+            }
+            items(
+                videoList.filter {
+                    videoCategoryFilter == "Toutes" ||
+                        videoFolders.optString(it, "À classer") == videoCategoryFilter
+                },
+                key = { it }
+            ) { videoUrl ->
+                val videoIndex = videoList.indexOf(videoUrl) + 1
+                val videoId = Regex(
+                    "(?:v=|youtu\\.be/|embed/|shorts/)([A-Za-z0-9_-]{11})"
+                ).find(videoUrl)?.groupValues?.getOrNull(1)
+                var menuExpanded by remember(videoUrl) { mutableStateOf(false) }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Panel)
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            if (videoId != null) {
+                                AsyncImage(
+                                    model = "https://img.youtube.com/vi/$videoId/hqdefault.jpg",
+                                    contentDescription = "Miniature vidéo",
+                                    modifier = Modifier.width(104.dp).height(60.dp)
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.weight(1f).padding(start = 8.dp)
+                            ) {
+                                Text("Vidéo $videoIndex", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text(
+                                    videoFolders.optString(videoUrl, "À classer"),
+                                    color = Green,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Button(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(context, LeafPlayerActivity::class.java)
+                                            .putExtra("video_url", videoUrl)
+                                    )
+                                }
+                            ) { Text("Lire") }
+                        }
+                        TextButton(onClick = { menuExpanded = true }) {
+                            Text("Ranger dans une catégorie")
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            folderNames.forEach { folder ->
+                                DropdownMenuItem(
+                                    text = { Text(folder) },
+                                    onClick = {
+                                        videoFolders.put(videoUrl, folder)
+                                        menuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Text("Collection personnelle", color = Green)
+                OutlinedTextField(
+                    value = collection,
+                    onValueChange = { collection = it },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Checkbox(checked = favorite, onCheckedChange = { favorite = it })
+                    Text("Ajouter aux favoris")
+                }
+            }
+            item {
+                Text("Playlists", color = Green)
+                OutlinedTextField(
+                    value = playlists,
+                    onValueChange = { playlists = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2
+                )
+            }
+            item {
+                Text("LeafNotes de cette chaîne", color = Green)
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 5
+                )
+            }
+            item {
+                Button(
+                    onClick = {
+                        save(
+                            c.copy(
+                                category = category,
+                                notes = notes,
+                                videos = videos,
+                                playlists = playlists,
+                                favorite = favorite,
+                                collection = collection,
+                                description = description,
+                                videoFolders = videoFolders.toString()
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Enregistrer") }
+                OutlinedButton(
+                    onClick = delete,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Supprimer cette fiche") }
+            }
+        }
+    }
 }
