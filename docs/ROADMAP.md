@@ -59,3 +59,10 @@
 ## 0.7.1 — Fiabilité
 - [x] Exporter les playlists communes comme objet JSON structuré
 - [x] Accepter les anciens exports de playlists au format texte JSON
+
+
+## 0.8.0 — Connexions et sauvegardes
+- [x] Renommer et supprimer une playlist sans supprimer les vidéos sources
+- [x] Reconnaître les URL YouTube youtu.be, watch, embed, Shorts et live
+- [x] Exporter les notes, chapitres et liens associés à chaque vidéo
+- [x] Restaurer les données vidéo sans écraser les données locales existantes
