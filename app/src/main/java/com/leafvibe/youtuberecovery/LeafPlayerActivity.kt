@@ -55,7 +55,9 @@ class LeafPlayerActivity : Activity() {
         if (currentVideoId.isNotBlank()) {
             val history = (prefs.getStringSet("video_history", emptySet()) ?: emptySet()).toMutableSet()
             history.add(currentVideoId)
-            prefs.edit().putStringSet("video_history", history).apply()
+            val historyTimes=runCatching { JSONObject(prefs.getString("video_history_timestamps","{}") ?: "{}") }.getOrDefault(JSONObject())
+            historyTimes.put(currentVideoId,System.currentTimeMillis())
+            prefs.edit().putStringSet("video_history", history).putString("video_history_timestamps",historyTimes.toString()).apply()
         }
 
         val root = LinearLayout(this).apply {
