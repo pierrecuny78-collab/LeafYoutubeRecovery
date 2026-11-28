@@ -79,3 +79,13 @@
 - [x] Uniformiser l'extraction des identifiants YouTube dans les fiches et la bibliothèque
 - [ ] Synchroniser les modifications des outils avec les indicateurs de la bibliothèque au retour du lecteur
 - [ ] Ajouter une fiche vidéo détaillée avec historique, favoris et statut de visionnage
+
+
+## 0.9.1 — Suivi des vidéos
+- [x] Favoris indépendants des catégories de rangement
+- [x] Historique des vidéos ouvertes automatiquement depuis LeafPlayer
+- [x] Filtres Favoris et Historique dans la bibliothèque globale
+- [x] Actualisation des états après lecture
+- [x] Export/import des favoris et de l'historique sans écraser les données locales
+- [ ] Historique trié par date avec reprise de lecture
+- [ ] Statut de visionnage manuel (à voir / en cours / terminé)
