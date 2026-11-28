@@ -153,7 +153,7 @@ class LeafPlayerActivity : Activity() {
         setContentView(root)
         refreshTools()
         intent.getStringExtra("open_tool")?.let { requestedTool ->
-            if (requestedTool in setOf("LeafNotes", "LeafChapters", "LeafLinks")) showTool(requestedTool)
+            if (requestedTool in toolDescriptions.keys) showTool(requestedTool)
         }
     }
 
