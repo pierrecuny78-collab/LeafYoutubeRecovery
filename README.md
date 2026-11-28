@@ -35,3 +35,9 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Filtres par catégorie vidéo : à classer, à regarder, à revoir, favoris, tutoriels, musique, divertissement, jeux vidéo et autres.
 - Classement d'une vidéo depuis la bibliothèque centrale, avec sauvegarde dans la fiche de sa chaîne.
 - Lecture depuis la bibliothèque via LeafPlayer.
+
+
+## Version 0.6.1 — Connexions entre les outils vidéo
+- Depuis la bibliothèque vidéo globale, ouvrir directement les notes, chapitres ou liens d'une vidéo.
+- LeafPlayer reçoit l'outil demandé et ouvre directement son espace associé à la vidéo.
+- Les notes, chapitres et liens restent stockés par identifiant de vidéo dans les préférences locales.
