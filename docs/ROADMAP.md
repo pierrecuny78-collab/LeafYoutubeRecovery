@@ -54,3 +54,8 @@
 - Pas de téléchargement ni de mise à disposition hors ligne des vidéos YouTube.
 - Conserver le lecteur officiel, ses commandes et ses mentions.
 - Les modules d'analyse ne doivent pas masquer ni modifier les commandes du lecteur.
+
+
+## 0.7.1 — Fiabilité
+- [x] Exporter les playlists communes comme objet JSON structuré
+- [x] Accepter les anciens exports de playlists au format texte JSON
