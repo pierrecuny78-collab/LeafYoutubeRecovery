@@ -116,3 +116,12 @@
 - [x] Relier les outils aux cartes de la bibliothèque et aux fiches de chaînes.
 - [x] Inclure les nouveaux contenus dans la sauvegarde JSON.
 - [ ] Connecter de vrais moteurs de transcription/traduction après choix d’un fournisseur et gestion sécurisée des clés.
+
+
+## 0.9.5
+- [x] Routage des outils vidéo depuis la barre Leaf vers la bibliothèque puis le lecteur.
+- [x] LeafStats basé sur les données locales.
+- [x] LeafGraph et LeafSimilar basés sur les chaînes et catégories existantes.
+- [x] LeafDiscover et LeafSearch utilisables.
+- [x] LeafPlaylist relié au gestionnaire global.
+- [ ] Connexion inter-applications des Leaf autonomes après confirmation des package IDs et contrats d'échange.
