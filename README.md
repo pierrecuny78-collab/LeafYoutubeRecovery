@@ -27,3 +27,11 @@ Barre inférieure horizontale configurable : LeafPlayer, LeafTranscript, LeafTra
 ## Build
 JDK 17, Gradle 8.9, Android SDK 35. `gradle :app:assembleDebug`.
 Application ID : `com.leafvibe.youtuberecovery`
+
+
+## Version 0.6.0 — Bibliothèque vidéo globale
+- Bibliothèque unique regroupant les vidéos enregistrées dans toutes les chaînes.
+- Recherche par URL ou nom de chaîne.
+- Filtres par catégorie vidéo : à classer, à regarder, à revoir, favoris, tutoriels, musique, divertissement, jeux vidéo et autres.
+- Classement d'une vidéo depuis la bibliothèque centrale, avec sauvegarde dans la fiche de sa chaîne.
+- Lecture depuis la bibliothèque via LeafPlayer.
