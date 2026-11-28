@@ -95,3 +95,11 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Filtre Historique trié de la vidéo la plus récemment ouverte à la plus ancienne.
 - Compteurs des vidéos en cours et terminées.
 - Export/import JSON des dates d'historique avec fusion conservant la date la plus récente.
+
+
+## Version 0.9.4 — Outils vidéo réellement utilisables
+- Les modules Transcription, Traduction, Résumé, Sous-titres et Vocabulaire ouvrent désormais un éditeur de texte sauvegardé par identifiant vidéo.
+- Les outils complémentaires sont accessibles depuis les fiches de vidéos dans la bibliothèque globale et les fiches de chaînes.
+- Les fiches vidéo affichent également les contenus enregistrés dans ces nouveaux outils.
+- L’export/import JSON inclut tous les contenus texte par vidéo (notes, chapitres, liens, transcription, traduction, résumé, sous-titres et vocabulaire).
+- Les modules de la barre d’accueil orientent vers la bibliothèque vidéo pour sélectionner un contenu. Les fonctions automatiques externes ne sont pas simulées : elles restent explicitement identifiées comme non intégrées.
