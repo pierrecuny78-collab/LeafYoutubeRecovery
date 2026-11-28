@@ -70,3 +70,12 @@
 
 ## 0.8.1 — Correction
 - [x] Corriger l'itération des playlists lors de leur suppression
+
+
+## 0.9.0 — Navigation contextuelle
+- [x] Ouvrir Notes, Chapitres et Liens directement depuis une vidéo d'une fiche chaîne
+- [x] Revenir à la fiche chaîne d'origine depuis la bibliothèque globale
+- [x] Signaler les notes, chapitres et liens déjà renseignés sur les cartes vidéo
+- [x] Uniformiser l'extraction des identifiants YouTube dans les fiches et la bibliothèque
+- [ ] Synchroniser les modifications des outils avec les indicateurs de la bibliothèque au retour du lecteur
+- [ ] Ajouter une fiche vidéo détaillée avec historique, favoris et statut de visionnage
