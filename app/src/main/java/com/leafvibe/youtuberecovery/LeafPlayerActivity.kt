@@ -142,6 +142,9 @@ class LeafPlayerActivity : Activity() {
         root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         setContentView(root)
         refreshTools()
+        intent.getStringExtra("open_tool")?.let { requestedTool ->
+            if (requestedTool in setOf("LeafNotes", "LeafChapters", "LeafLinks")) showTool(requestedTool)
+        }
     }
 
     private fun refreshTools() {
