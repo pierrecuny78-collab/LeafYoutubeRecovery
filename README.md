@@ -61,3 +61,8 @@ Application ID : `com.leafvibe.youtuberecovery`
 - Reconnaissance plus fiable des liens YouTube standards, courts, Shorts, directs et intégrés.
 - Export JSON des notes, chapitres et liens enregistrés par vidéo.
 - Import fusionné des outils vidéo : les notes déjà présentes sur l'appareil ne sont pas écrasées.
+
+
+## Version 0.8.1 — Correction de compilation
+- Correction du parcours des clés JSON lors de la suppression d'une playlist.
+- Build Android relancé après correction.
