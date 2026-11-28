@@ -48,7 +48,7 @@ class MainActivity:ComponentActivity(){
  override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(!prefs.getBoolean("dock_v04_migrated",false)){val all=setOf("LeafPlayer","LeafTranscript","LeafTranslate","LeafSummary","LeafSubtitles","LeafChapters","LeafLinks","LeafVocabulary","LeafNotes","LeafSimilar","LeafDiscover","LeafPlaylist","LeafGraph","LeafStats","LeafSound","LeafColour","LeafBridge","LeafTracker","LeafWallpaper","LeafSearch","LeafExport");prefs.edit().putStringSet("home_tools",(prefs.getStringSet("home_tools",emptySet())?:emptySet())+all).putBoolean("dock_v04_migrated",true).apply()};setContent{
   var cats by remember{mutableStateOf(readCategories())};var channels by remember{mutableStateOf(load())};var selected by remember{mutableStateOf<Channel?>(null)};var showVideoLibrary by remember{mutableStateOf(false)}
   MaterialTheme(colorScheme=darkColorScheme(primary=Green,background=Navy,surface=Panel,onPrimary=Navy,onBackground=Color.White,onSurface=Color.White)){
-   if(showVideoLibrary) VideoLibrary(channels,{updated->channels=updated;save(updated)},{showVideoLibrary=false},{u->startActivity(Intent(this@MainActivity,LeafPlayerActivity::class.java).putExtra("video_url",u))})
+   if(showVideoLibrary) VideoLibrary(channels,{updated->channels=updated;save(updated)},{showVideoLibrary=false},{u->startActivity(Intent(this@MainActivity,LeafPlayerActivity::class.java).putExtra("video_url",u))},{channelId->selected=channels.firstOrNull{it.id==channelId};showVideoLibrary=false})
    else if(selected==null) Home(cats,channels,{cats=it;saveCategories(it)},{channels=it;save(it)},{selected=it},{q->startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/results?search_query="+Uri.encode(q))))},{showVideoLibrary=true})
    else Detail(selected!!,cats,{selected=null},{u->channels=channels.map{if(it.id==u.id)u else it};save(channels);selected=u},{channels=channels.filterNot{it.id==selected!!.id};save(channels);selected=null},{u->startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(if(u.startsWith("http"))u else "https://www.youtube.com/$u")))})
   }
@@ -188,9 +188,7 @@ private fun Detail(
                 key = { it }
             ) { videoUrl ->
                 val videoIndex = videoList.indexOf(videoUrl) + 1
-                val videoId = Regex(
-                    "(?:v=|youtu\\.be/|embed/|shorts/)([A-Za-z0-9_-]{11})"
-                ).find(videoUrl)?.groupValues?.getOrNull(1)
+                val videoId = extractYouTubeVideoId(videoUrl)
                 var menuExpanded by remember(videoUrl) { mutableStateOf(false) }
 
                 Card(
@@ -241,6 +239,14 @@ private fun Detail(
                                     }
                                 )
                             }
+                        }
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            TextButton(onClick = { playTool(context, videoUrl, "LeafNotes") }) { Text("Notes") }
+                            TextButton(onClick = { playTool(context, videoUrl, "LeafChapters") }) { Text("Chapitres") }
+                            TextButton(onClick = { playTool(context, videoUrl, "LeafLinks") }) { Text("Liens") }
                         }
                     }
                 }
@@ -307,7 +313,7 @@ private fun Detail(
 private data class LibraryVideo(val channelId:String,val channelName:String,val channelCategory:String,val url:String,val folder:String)
 
 @Composable
-private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Unit,back:()->Unit,play:(String)->Unit) {
+private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Unit,back:()->Unit,play:(String)->Unit,openChannel:(String)->Unit) {
     var query by remember { mutableStateOf("") }
     var folderFilter by remember { mutableStateOf("Toutes") }
     val context = LocalContext.current
@@ -382,7 +388,20 @@ private fun VideoLibrary(channels:List<Channel>,saveChannels:(List<Channel>)->Un
                             TextButton(onClick={playTool(context,video.url,"LeafLinks")}) { Text("Liens") }
                             TextButton(onClick={playlistDialogVideo=video}) { Text("Playlist") }
                         }
-                        Text("Chaîne : ${video.channelCategory}",color=Color.LightGray,style=MaterialTheme.typography.labelSmall)
+                        val videoId = extractYouTubeVideoId(video.url) ?: video.url
+                        val videoPrefs = context.getSharedPreferences("leaf_youtube_recovery", Context.MODE_PRIVATE)
+                        val hasNotes = !videoPrefs.getString("notes_$videoId", "").isNullOrBlank()
+                        val hasChapters = !videoPrefs.getString("chapters_$videoId", "").isNullOrBlank()
+                        val hasLinks = !videoPrefs.getString("links_$videoId", "").isNullOrBlank()
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                            if(hasNotes) Text("Notes ✓",color=Green,style=MaterialTheme.typography.labelSmall)
+                            if(hasChapters) Text("Chapitres ✓",color=Green,style=MaterialTheme.typography.labelSmall)
+                            if(hasLinks) Text("Liens ✓",color=Green,style=MaterialTheme.typography.labelSmall)
+                        }
+                        Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                            Text("Chaîne : ${video.channelCategory}",color=Color.LightGray,style=MaterialTheme.typography.labelSmall,modifier=Modifier.weight(1f))
+                            TextButton(onClick={openChannel(video.channelId)}) { Text("Fiche chaîne") }
+                        }
                         DropdownMenu(expanded=menuExpanded,onDismissRequest={menuExpanded=false}) {
                             folders.forEach { folder -> DropdownMenuItem(text={Text(folder)},onClick={
                                 val target=channels.firstOrNull{it.id==video.channelId}
