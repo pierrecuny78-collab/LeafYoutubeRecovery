@@ -113,3 +113,10 @@ Application ID : `com.leafvibe.youtuberecovery`
 - LeafDiscover lance une recherche YouTube depuis son écran ; LeafSearch recherche localement dans les chaînes enregistrées.
 - LeafPlaylist ouvre le gestionnaire de playlists multi-chaînes existant.
 - Les applications Leaf autonomes restent à connecter via leurs identifiants Android officiels : aucune connexion fictive n'est affichée.
+
+
+## Version 0.9.6 — Fiabilisation des chaînes
+- Validation des liens de chaîne YouTube lors de l'ajout (URL de chaîne, @handle ou ID UC…).
+- Normalisation des URL de chaînes et refus des doublons exacts.
+- Recherche étendue aux descriptions et notes des chaînes.
+- Les liens non reconnus affichent une explication au lieu d'enregistrer une fiche inutilisable.
