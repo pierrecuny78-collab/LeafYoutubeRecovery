@@ -37,6 +37,13 @@
 - [x] Modifier le classement depuis la bibliothèque globale
 - [x] Ouvrir une vidéo directement dans LeafPlayer
 
+## 0.7.0 — Playlists communes
+- [x] Créer des playlists partagées entre plusieurs chaînes
+- [x] Ajouter ou retirer une vidéo d’une playlist depuis sa carte
+- [x] Filtrer la bibliothèque par playlist
+- [x] Inclure les playlists dans l’export JSON
+- [x] Restaurer et fusionner les playlists sans dupliquer les URL
+
 ## 0.5.0 — Fiabilité et personnalisation
 - [ ] Import/export JSON et sauvegarde ZIP
 - [ ] Room, migrations, sauvegardes et restauration
